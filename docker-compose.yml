@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------
+  # 1. API GATEWAY (DMZ)
+  # ----------------------------------------------------
+  api_gateway:
+    image: kong:3.3
+    container_name: kong_gateway
+    restart: always
+    volumes:
+      - ./api_gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro # DB-less 설정 파일 마운트
+    environment:
+      KONG_DATABASE: "off"  # DB-less 모드 활성화
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+    ports:
+      - "80:8000" # 외부 HTTP 포트 80으로 노출
+      #- "443:8443" # 외부 HTTPS 포트 443으로 노출 (선택)
+    networks:
+      - proxy_network  # DMZ 네트워크에 연결
+      - internal_network
+
+  # ----------------------------------------------------
+  # 2. FRONTEND / WAS (DMZ)
+  # ----------------------------------------------------
+  was:
+    build:
+      context: ./was
+      dockerfile: Dockerfile
+    container_name: was
+    restart: always
+    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    volumes:
+	    - ./was:/app
+    networks:
+      - internal_network # 내부 서비스 호출을 위해 internal_network에도 연결
+
+  # ----------------------------------------------------
+  # 3. BACKEND MICROSERVICES (INTERNAL NETWORK)
+  # ----------------------------------------------------
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth
+    restart: always
+    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+		volumes:
+	    - ./auth:/app
+    networks:
+      - internal_network # 외부 노출 없음
+
+  account:
+    build:
+      context: ./account
+      dockerfile: Dockerfile
+    container_name: account
+    restart: always
+    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    volumes:
+      - ./account:/app
+    networks:
+      - internal_network
+    env_file:             
+      - ./account/.env
+
+  payment:
+    build:
+      context: ./payment
+      dockerfile: Dockerfile
+    container_name: payment
+    restart: always
+    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    volumes:
+      - ./payment:/app
+    networks:
+      - internal_network
+
+  settlement:
+    build:
+      context: ./settlement # settlement 폴더명 사용
+      dockerfile: Dockerfile
+    container_name: settlement
+    restart: always
+    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    volumes:
+      - ./settlement:/app
+    networks:
+      - internal_network
+
+# ----------------------------------------------------
+# 4. NETWORKS DEFINITION
+# ----------------------------------------------------
+networks:
+  proxy_network:  # DMZ 역할 (외부와 연결되는 네트워크)
+    driver: bridge
+  internal_network: # 내부망 역할 (마이크로서비스 간 통신 네트워크)
+    driver: bridge
