@@ -1,263 +1,244 @@
-import sqlite3
-import uuid
-import jwt 
-import datetime
-import time
 from flask import Flask, request, jsonify
-
-# ====================================================================
-# [보안 설정]
-# 실제 환경에서는 환경 변수를 사용해야 하며, 비밀 키는 매우 길고 복잡해야 합니다.
-SECRET_KEY = "secure-quickpay-master-key-0123456789abcdef"
-ALGORITHM = "HS256"
-TOKEN_EXPIRY_MINUTES = 30 # 토큰 만료 시간: 30분
-# ====================================================================
+from flask_cors import CORS
+import sqlite3
+import jwt
+import bcrypt
+import os
+import uuid
+import time
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-SERVICE_PORT = 5000 
-DB_PATH = 'db/auth.db'
+CORS(app)
 
-def get_db_connection():
-    """데이터베이스 연결 객체를 반환합니다."""
+# --- 설정 (Environment Variables 사용) ---
+# Secret Key는 JWT 서명에 사용되며, 외부에 절대 노출되면 안 됩니다.
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default_very_secret_key_for_dev')
+DB_PATH = os.getenv('DB_PATH', 'db/auth.db')
+TOKEN_EXPIRATION_HOURS = int(os.getenv('TOKEN_EXPIRATION_HOURS', '2'))
+# ----------------------------------------
+
+
+# --- 데이터베이스 연결 및 초기화 ---
+
+def get_db():
+    """SQLite 데이터베이스 연결"""
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn.row_factory = sqlite3.Row # 결과를 딕셔너리 형태로 반환
     return conn
 
 def init_db():
-    """데이터베이스와 필요한 테이블을 초기화합니다. (비밀번호는 단순 문자열로 저장합니다. 실제 환경에서는 해싱 필수)"""
-    conn = get_db_connection()
-    c = conn.cursor()
-    # users 테이블: 사용자 정보 저장
-    c.execute('''
+    """데이터베이스 초기화 (users 테이블, revoked_tokens 테이블 생성)"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 1. 사용자 계정 테이블 (로그인 검증용)
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL 
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    # revoked_tokens 테이블: 로그아웃된 토큰을 저장하는 블랙리스트
-    c.execute('''
+    
+    # 2. 블랙리스트 토큰 테이블 (로그아웃 처리용)
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS revoked_tokens (
-            token_id TEXT PRIMARY KEY,
+            jti TEXT PRIMARY KEY NOT NULL,
             expires_at INTEGER NOT NULL
         )
     ''')
 
-    # 테스트 사용자 추가 (admin/password)
-    c.execute("SELECT * FROM users WHERE username = 'admin'")
-    if c.fetchone() is None:
-        # 안전한 버전: 비밀번호를 평문으로 저장합니다. (실제 환경에서는 bcrypt 등으로 해싱해야 함)
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', 'password'))
-    
-    # 추가 테스트 사용자
-    c.execute("SELECT * FROM users WHERE username = 'user1234'")
-    if c.fetchone() is None:
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('user1234', 'password'))
-    
+    # 테스트 계정 추가 (account.py와 동일한 'user1', 'admin' 계정)
+    test_users = [
+        ('admin', 'password'),
+        ('user1', 'password'),
+    ]
+
+    for user_id, password in test_users:
+        # bcrypt로 안전하게 해시
+        password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        try:
+            cursor.execute('''
+                INSERT INTO users (user_id, password_hash)
+                VALUES (?, ?)
+            ''', (user_id, password_hash))
+        except sqlite3.IntegrityError:
+            pass  # 이미 존재하는 경우 무시
+
     conn.commit()
     conn.close()
+    print(f"[{datetime.now()}] [DB] 데이터베이스 초기화 및 테스트 계정 추가 완료")
 
-with app.app_context():
-    init_db()
 
-# 토큰을 헤더에서 추출하는 유틸리티 함수
-def extract_token_from_header():
-    """Authorization 헤더에서 Bearer 토큰을 추출합니다."""
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        return None, "Authorization header missing"
-    
-    try:
-        auth_type, token = auth_header.split(' ', 1)
-    except ValueError:
-        return None, "Invalid Authorization header format"
-    
-    if auth_type.lower() != 'bearer' or not token:
-        return None, "Token must be a Bearer token"
-    
-    return token, None
+# --- 유틸리티 함수 ---
 
-# 토큰이 블랙리스트에 있는지 확인하는 함수
+def create_jwt_token(user_id):
+    """JWT 토큰 생성 및 서명"""
+    jti = str(uuid.uuid4())
+    expires = datetime.utcnow() + timedelta(hours=TOKEN_EXPIRATION_HOURS)
+    
+    payload = {
+        'user_id': user_id,
+        'exp': expires,              # 만료 시간 (UTC)
+        'iat': datetime.utcnow(),    # 발행 시간 (UTC)
+        'jti': jti                   # JWT ID (블랙리스트 추적용)
+    }
+    
+    # HS256 알고리즘으로 서명
+    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
+    
+    return token, expires
+
+
 def is_token_revoked(jti):
-    """JWT ID (jti)가 블랙리스트에 등록되어 있는지 확인합니다."""
-    conn = get_db_connection()
+    """토큰이 블랙리스트에 있는지 확인"""
+    conn = get_db()
     cursor = conn.cursor()
-    # 만료된 토큰은 블랙리스트에서 정리합니다.
-    cursor.execute("DELETE FROM revoked_tokens WHERE expires_at < ?", (time.time(),))
-    conn.commit()
     
-    # [SQLi 방지]: 매개변수화된 쿼리 사용
-    cursor.execute("SELECT token_id FROM revoked_tokens WHERE token_id = ?", (jti,))
+    # 현재 만료되지 않은 토큰만 확인
+    cursor.execute("SELECT jti FROM revoked_tokens WHERE jti = ? AND expires_at > ?", 
+                   (jti, int(time.time())))
     is_revoked = cursor.fetchone() is not None
     conn.close()
+    
     return is_revoked
 
-# ====================================================================
-# API 엔드포인트
-# ====================================================================
 
-@app.route('/health')
+# --- API 엔드포인트 ---
+
+@app.route('/health', methods=['GET'])
 def health():
-    return jsonify({"status": "ok", "service": "auth"}), 200
-
-@app.route('/auth/register', methods=['POST'])
-def register():
-    """사용자 등록 API"""
-    data = request.json
-    username = data.get('username')
-    password = data.get('password') 
-
-    if not username or not password:
-        return jsonify({"message": "Username and password required"}), 400
-
-    conn = get_db_connection()
-    try:
-        # [SQLi 방지]: 매개변수화된 쿼리 사용
-        conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-        conn.commit()
-        return jsonify({"message": f"User {username} registered successfully"}, username), 201
-    except sqlite3.IntegrityError:
-        return jsonify({"message": "Username already exists"}), 409
-    except Exception as e:
-        print(f"Registration error: {e}")
-        return jsonify({"message": "Internal error"}), 500
-    finally:
-        conn.close()
+    """헬스체크"""
+    return jsonify({"status": "Auth Service OK"}), 200
 
 
 @app.route('/auth/login', methods=['POST'])
 def login():
     """
-    [안전함] 토큰 생성 API
-    - 요구사항: user_id와 password 검증 필요
+    [토큰 생성 API] (JWT 발급)
+    Request: {"user_id": "user1234", "password": "pass_word"}
+    Response: {"JWT": "..."}
     """
-    data = request.json
-    username = data.get('user_id') 
-    password = data.get('password') # 비밀번호 필드 추가
+    data = request.get_json()
+    user_id = data.get('user_id')
+    password = data.get('password')
 
-    if not username or not password:
-        return jsonify({"message": "User ID and password are required"}), 400
+    if not user_id or not password:
+        print(f"[{datetime.now()}] [Login 실패] 누락된 필드: user_id={user_id}")
+        return jsonify({"error": "MISSING_FIELDS", "message": "user_id와 password가 필요합니다."}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # 1. 사용자 조회 및 인증 (비밀번호 검증 추가)
-    # [SQLi 방지]: 매개변수화된 쿼리 사용
-    query = "SELECT user_id, username, password FROM users WHERE username = ? AND password = ?"
-    
     try:
-        cursor.execute(query, (username, password))
-        user = cursor.fetchone()
+        conn = get_db()
+        cursor = conn.cursor()
 
-        if user:
-            # 2. 인증 성공 -> JWT 생성
-            now = datetime.datetime.now(datetime.timezone.utc)
-            expiry = now + datetime.timedelta(minutes=TOKEN_EXPIRY_MINUTES)
-            token_id = str(uuid.uuid4()) # 토큰 블랙리스트에 사용될 고유 ID (jti)
-            
-            payload = {
-                "user_id": user['user_id'],
-                "username": user['username'],
-                "exp": expiry.timestamp(), 
-                "iat": now.timestamp(),      
-                "jti": token_id 
-            }
-            
-            jwt_token = jwt.encode(
-                payload, 
-                SECRET_KEY, 
-                algorithm=ALGORITHM
-            )
-            
-            return jsonify({
-                "message": "Login successful. JWT token issued.",
-                "JWT": jwt_token 
-            }), 200
-        else:
-            # 사용자 ID 또는 비밀번호가 일치하지 않는 경우
-            return jsonify({"message": "Invalid credentials"}), 401
-    except Exception as e:
-        print(f"Login error: {e}")
-        return jsonify({"message": "Internal error during token generation"}), 500
-    finally:
+        # Parameterized query를 사용하여 SQL Injection 방지
+        cursor.execute("SELECT password_hash FROM users WHERE user_id = ?", (user_id,))
+        user = cursor.fetchone()
         conn.close()
+
+        # 사용자 존재 및 비밀번호 검증 (bcrypt 사용)
+        if user and bcrypt.checkpw(password.encode(), user['password_hash'].encode()):
+            # 토큰 생성
+            token, expires = create_jwt_token(user_id)
+            print(f"[{datetime.now()}] [Login 성공] user_id={user_id}, 만료 시간={expires}")
+            return jsonify({"JWT": token}), 200
+        else:
+            print(f"[{datetime.now()}] [Login 실패] 인증 실패: user_id={user_id}")
+            return jsonify({"error": "AUTHENTICATION_FAILED", "message": "아이디 또는 비밀번호가 일치하지 않습니다."}), 401
+
+    except Exception as e:
+        print(f"[{datetime.now()}] [Login 오류] {e}")
+        return jsonify({"error": "SERVER_ERROR", "message": "인증 서버 오류가 발생했습니다."}), 500
 
 
 @app.route('/auth/validate', methods=['GET'])
-def validate():
+def validate_token():
     """
-    [안전함] 토큰 인증 API - 블랙리스트 검사 포함
+    [토큰 인증 API] (토큰 유효성 검사 및 사용자 ID 반환)
+    Header: Authorization: Bearer {JWT}
+    Response: {"user_id": "..."}
     """
-    token, error_message = extract_token_from_header()
-    if error_message:
-        return jsonify({"user_id": None, "message": error_message}), 401
+    auth_header = request.headers.get('Authorization')
+    
+    if not auth_header or not auth_header.startswith('Bearer '):
+        print(f"[{datetime.now()}] [Validate 실패] Authorization 헤더 누락")
+        return jsonify({"error": "MISSING_TOKEN", "message": "Authorization 헤더가 누락되었거나 형식이 잘못되었습니다."}), 401
 
+    token = auth_header.split(' ', 1)[1]
+    
     try:
-        # 1. JWT 기본 디코딩 및 만료 시간 검사
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        
+        # 1. 토큰 디코딩 및 검증 (서명 및 만료 시간 확인)
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
+        user_id = payload.get('user_id')
         jti = payload.get('jti')
-        if not jti:
-            return jsonify({"user_id": None, "message": "JWT missing jti claim"}), 401
 
-        # 2. 블랙리스트 검사
+        # 2. 블랙리스트 확인
         if is_token_revoked(jti):
-            return jsonify({"user_id": None, "message": "Token has been revoked/logged out"}), 401
-
-        # 3. 유효성 검증 성공
-        user_id = payload.get('username') 
+            print(f"[{datetime.now()}] [Validate 실패] 폐기된 토큰 (블랙리스트): user_id={user_id}, jti={jti}")
+            return jsonify({"error": "TOKEN_REVOKED", "message": "이 토큰은 이미 로그아웃되었습니다."}), 401
+        
+        print(f"[{datetime.now()}] [Validate 성공] user_id={user_id}, jti={jti}")
         return jsonify({"user_id": user_id}), 200
 
     except jwt.ExpiredSignatureError:
-        return jsonify({"user_id": None, "message": "Token has expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"user_id": None, "message": "Invalid JWT token"}), 401
+        print(f"[{datetime.now()}] [Validate 실패] 토큰 만료")
+        return jsonify({"error": "TOKEN_EXPIRED", "message": "토큰이 만료되었습니다."}), 401
+    except jwt.InvalidSignatureError:
+        print(f"[{datetime.now()}] [Validate 실패] 서명 불일치")
+        return jsonify({"error": "INVALID_TOKEN", "message": "토큰 서명이 유효하지 않습니다."}), 401
+    except jwt.exceptions.DecodeError:
+        print(f"[{datetime.now()}] [Validate 실패] 디코딩 오류")
+        return jsonify({"error": "INVALID_TOKEN", "message": "토큰 형식이 잘못되었습니다."}), 401
     except Exception as e:
-        print(f"Validation error: {e}")
-        return jsonify({"user_id": None, "message": "Internal error during validation"}), 500
+        print(f"[{datetime.now()}] [Validate 오류] {e}")
+        return jsonify({"error": "SERVER_ERROR", "message": "토큰 검증 중 서버 오류가 발생했습니다."}), 500
 
 
 @app.route('/auth/logout', methods=['GET'])
 def logout():
     """
-    [안전함] 로그아웃 API - 사용하지 않는 토큰을 블랙리스트에 추가
+    [로그아웃 API] (토큰 블랙리스트 추가)
+    Header: Authorization: Bearer {JWT}
     """
-    token, error_message = extract_token_from_header()
-    if error_message:
-        return jsonify({"message": error_message}), 401
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({"error": "MISSING_TOKEN", "message": "Authorization 헤더가 필요합니다."}), 401
+
+    token = auth_header.split(' ', 1)[1]
     
-    conn = get_db_connection()
     try:
-        # 1. 토큰 디코딩을 시도하여 유효성 및 jti, 만료 시간 확보
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # 토큰 디코딩 (만료 여부 검사 없이 서명만 검사)
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'], options={"verify_exp": False})
         jti = payload.get('jti')
-        expires_at = payload.get('exp')
-
-        if not jti or not expires_at:
-            return jsonify({"message": "Token missing required jti or exp claim"}), 401
+        exp = payload.get('exp')
+        user_id = payload.get('user_id')
         
-        # 2. 토큰을 블랙리스트에 추가
-        # [SQLi 방지]: 매개변수화된 쿼리 사용
-        conn.execute(
-            "INSERT OR IGNORE INTO revoked_tokens (token_id, expires_at) VALUES (?, ?)", 
-            (jti, expires_at)
-        )
+        if not jti or not exp:
+             raise jwt.exceptions.DecodeError("토큰에 jti 또는 exp 클레임이 없습니다.")
+
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # 블랙리스트 테이블에 JTI와 만료 시간(Unix timestamp) 저장
+        # 토큰이 이미 폐기된 상태일 수 있으므로 IGNORE 사용
+        cursor.execute("INSERT OR IGNORE INTO revoked_tokens (jti, expires_at) VALUES (?, ?)", (jti, exp))
         conn.commit()
-        
-        return jsonify({"message": "Logout successful: Token revoked"}), 200
-
-    except jwt.ExpiredSignatureError:
-        # 이미 만료된 토큰이므로, 블랙리스트에 추가할 필요 없이 성공 처리
-        return jsonify({"message": "Logout successful: Token already expired"}), 200
-    except jwt.InvalidTokenError:
-        # 유효하지 않은 토큰이므로, 로그아웃 처리할 수 없음
-        return jsonify({"message": "Invalid token provided"}), 401
-    except Exception as e:
-        print(f"Logout error: {e}")
-        return jsonify({"message": "Internal error during logout"}), 500
-    finally:
         conn.close()
+        
+        print(f"[{datetime.now()}] [Logout 성공] user_id={user_id}, jti={jti} 블랙리스트에 추가됨")
+        return jsonify({"message": "로그아웃 성공, 토큰이 폐기되었습니다."}), 200
+
+    except Exception as e:
+        print(f"[{datetime.now()}] [Logout 오류] {e}")
+        return jsonify({"error": "LOGOUT_FAIL", "message": "로그아웃 처리 중 오류가 발생했습니다."}), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=SERVICE_PORT)
+    # 데이터베이스 초기화
+    init_db()
+    
+    # Flask 개발 서버 실행 (Auth 서비스는 5000번 포트 사용)
+    # account.py는 8001, payment.py는 8002 포트를 사용하므로, auth는 5000번을 사용하겠습니다.
+    app.run(host='0.0.0.0', port=5000, debug=True)
