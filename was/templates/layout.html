@@ -24,7 +24,7 @@
             <div class="nav-auth" id="auth-section">
                 {% if g.user_id %}
                     <span id="user-info" class="nav-links">ID: {{ g.user_id }}</span>
-                    <span id="balance-info" class="nav-links">Balance: ...</span>
+                    <span id="balance-info" class="nav-links">Balance: {{ g.user_balance }}</span>
                     <button id="logout-button" class="btn btn-outline">로그아웃</button>
                 {% else %}
                     <a href="/web/login" class="btn btn-outline">로그인</a>
