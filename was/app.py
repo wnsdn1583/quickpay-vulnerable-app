@@ -1,10 +1,20 @@
 from flask import Flask, render_template, request, g
+import requests 
 
 app = Flask(__name__)
 
 @app.before_request
 def before_request():
     g.user_id = request.headers.get('X-User-ID')
+    if g.user_id:
+        api_url = f"http://account/account/balance?user_id={g.user_id}"
+    try:
+        response = requests.get(api_url, timeout=5)
+        response.raise_for_status() # HTTP 오류가 발생하면 예외 발생
+        data = response.json()
+        g.user_balance = data.get("balance", "N/A") # 'balance' 키의 값을 반환
+    except requests.exceptions.RequestException as e:
+        g.user_balance = " "
 
 @app.route('/')
 def index():
