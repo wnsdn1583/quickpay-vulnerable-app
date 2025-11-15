@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Pay</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/web/main" class="navbar-logo">Quick Pay</a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/web/deposit" class="nav-links">입금</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/web/withdraw" class="nav-links">출금</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/web/fund" class="nav-links">사모펀드</a>
+                </li>
+            </ul>
+            <div class="nav-auth" id="auth-section">
+                {% if g.user_id %}
+                    <span id="user-info" class="nav-links">ID: {{ g.user_id }}</span>
+                    <span id="balance-info" class="nav-links">Balance: {{ g.user_balance }}</span>
+                    <button id="logout-button" class="btn btn-outline">로그아웃</button>
+                {% else %}
+                    <a href="/web/login" class="btn btn-outline">로그인</a>
+                    <a href="/web/register" class="btn">회원가입</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,79 +1,42 @@
 _format_version: "3.0"
 
-Kong API Gateway의 DB-less 설정 파일 (kong.yml)
-
 services:
+- name: auth-service
+  url: http://auth:5000
+  routes:
+  - name: auth-route
+    paths:
+    - /auth
+    strip_path: false
 
-1. 인증(Auth) 마이크로서비스 정의
+- name: account-service
+  url: http://account:5001
+  routes:
+  - name: account-route
+    paths:
+    - /account
+    strip_path: false
 
-name: auth-service
-url: http://auth:5000 # Docker Compose에서 'auth' 컨테이너의 5000번 포트 (가정)
-routes:
+- name: payment-service
+  url: http://payment:5002
+  routes:
+  - name: payment-route
+    paths:
+    - /payment
+    strip_path: false
 
-/auth 경로로 들어오는 모든 요청을 auth-service로 라우팅
+- name: settlement-service
+  url: http://settlement:5003
+  routes:
+  - name: settlement-route
+    paths:
+    - /settlement
+    strip_path: false
 
-name: auth-route
-paths:
-
-/auth
-strip_path: false
-
-2. 계정(Account) 마이크로서비스 정의
-
-name: account-service
-url: http://account:5001 # Docker Compose에서 'account' 컨테이너의 5001번 포트 (가정)
-routes:
-
-/account 경로로 들어오는 모든 요청을 account-service로 라우팅
-
-name: account-route
-paths:
-
-/account
-strip_path: false
-
-3. 결제(Payment) 마이크로서비스 정의
-
-name: payment-service
-url: http://payment:5002 # Docker Compose에서 'payment' 컨테이너의 5002번 포트 (가정)
-routes:
-
-/payment 경로로 들어오는 모든 요청을 payment-service로 라우팅
-
-name: payment-route
-paths:
-
-/payment
-strip_path: false
-
-4. 정산(Settlement) 마이크로서비스 정의
-
-name: settlement-service
-url: http://settlement:5003 # Docker Compose에서 'settlement' 컨테이너의 5003번 포트 (가정)
-routes:
-
-/settlement 경로로 들어오는 모든 요청을 settlement-service로 라우팅
-
-name: settlement-route
-paths:
-
-/settlement
-strip_path: false
-
-5. 웹 애플리케이션 서버(WAS) 정의
-
-WAS는 일반적으로 루트(/) 경로를 처리하여 프론트엔드 HTML/JS를 제공한다고 가정합니다.
-
-name: was-service
-url: http://was:5004 # Docker Compose에서 'was' 컨테이너의 5004번 포트 (가정)
-routes:
-
-루트(/) 경로로 들어오는 요청을 was-service로 라우팅 (프론트엔드 서빙)
-
-name: was-route
-paths:
-
-/
-strip_path: false
-
-이 라우트는 /was/login 대신 http://gateway/login 으로 접속하게 합니다.
+- name: was-service
+  url: http://was:5004
+  routes:
+  - name: was-route
+    paths:
+    - /
+    strip_path: false
