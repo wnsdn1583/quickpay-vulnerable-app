@@ -10,7 +10,7 @@ services:
     strip_path: false
 
 - name: account-service
-  url: http://account:5001
+  url: http://account:5000
   routes:
   - name: account-route
     paths:
@@ -18,7 +18,7 @@ services:
     strip_path: false
 
 - name: payment-service
-  url: http://payment:5002
+  url: http://payment:5000
   routes:
   - name: payment-route
     paths:
@@ -26,7 +26,7 @@ services:
     strip_path: false
 
 - name: settlement-service
-  url: http://settlement:5003
+  url: http://settlement:5000
   routes:
   - name: settlement-route
     paths:
@@ -34,7 +34,7 @@ services:
     strip_path: false
 
 - name: was-service
-  url: http://was:5004
+  url: http://was:5000
   routes:
   - name: was-route
     paths:
