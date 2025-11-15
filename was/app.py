@@ -5,7 +5,9 @@ app = Flask(__name__)
 
 @app.before_request
 def before_request():
-    g.user_id = request.headers.get('X-User-ID')
+    # 요청 받을 때 X-User-ID 확인
+    # X-User-ID 유무에 따라 navbar 우측 layout이 달라짐 (layout.html 확인)
+    g.user_id = request.headers.get('X-User-ID') 
     if g.user_id:
         api_url = f"http://account/account/balance?user_id={g.user_id}"
     try:
