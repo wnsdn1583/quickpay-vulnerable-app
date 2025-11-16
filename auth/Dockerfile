@@ -8,10 +8,11 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 #db 디렉토리 생성 및 db 파일 복사 (db 파일은 app.py가 실행될 때 필요)
-COPY 명령 실행 전에 폴더를 미리 만들어 둡니다.
 
-RUN mkdir -p db
-COPY db/auth.db db/
+# COPY 명령 실행 전에 폴더를 미리 만들어 둡니다.
+
+# RUN mkdir -p db
+# COPY db/auth.db db/
 
 #메인 애플리케이션 파일을 복사합니다.
 COPY app.py .
