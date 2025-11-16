@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 import sqlite3
 import jwt
@@ -29,6 +29,11 @@ def get_db():
 
 def init_db():
     """데이터베이스 초기화 (users 테이블, revoked_tokens 테이블 생성)"""
+    # 데이터베이스 파일이 위치할 디렉토리 생성
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+        
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -71,6 +76,7 @@ def init_db():
     conn.close()
     print(f"[{datetime.now()}] [DB] 데이터베이스 초기화 및 테스트 계정 추가 완료")
 
+init_db()
 
 # --- 유틸리티 함수 ---
 
@@ -118,32 +124,33 @@ def health():
 def login():
     """
     [토큰 생성 API] (JWT 발급)
-    Request: {"user_id": "user1234", "password": "pass_word"}
-    Response: {"JWT": "..."}
+    Request: {"user_id": "user1234"}
+    Response: {} (body) with HttpOnly cookie `jwt_token`
     """
     data = request.get_json()
     user_id = data.get('user_id')
-    password = data.get('password')
 
-    if not user_id or not password:
+    if not user_id:
         print(f"[{datetime.now()}] [Login 실패] 누락된 필드: user_id={user_id}")
-        return jsonify({"error": "MISSING_FIELDS", "message": "user_id와 password가 필요합니다."}), 400
+        return jsonify({"error": "MISSING_FIELDS", "message": "user_id가 필요합니다."}), 400
 
     try:
-        conn = get_db()
-        cursor = conn.cursor()
-
-        # Parameterized query를 사용하여 SQL Injection 방지
-        cursor.execute("SELECT password_hash FROM users WHERE user_id = ?", (user_id,))
-        user = cursor.fetchone()
-        conn.close()
-
-        # 사용자 존재 및 비밀번호 검증 (bcrypt 사용)
-        if user and bcrypt.checkpw(password.encode(), user['password_hash'].encode()):
+        if user_id:
             # 토큰 생성
             token, expires = create_jwt_token(user_id)
             print(f"[{datetime.now()}] [Login 성공] user_id={user_id}, 만료 시간={expires}")
-            return jsonify({"JWT": token}), 200
+            
+            # 응답 생성 및 HttpOnly 쿠키 설정
+            response = make_response(jsonify({"message": "Login successful"}))
+            response.set_cookie(
+                'jwt_token', 
+                value=token,
+                expires=expires,
+                httponly=True,
+                samesite='Lax'
+                # secure=True # HTTPS 환경에서만 주석 해제
+            )
+            return response
         else:
             print(f"[{datetime.now()}] [Login 실패] 인증 실패: user_id={user_id}")
             return jsonify({"error": "AUTHENTICATION_FAILED", "message": "아이디 또는 비밀번호가 일치하지 않습니다."}), 401
@@ -153,21 +160,19 @@ def login():
         return jsonify({"error": "SERVER_ERROR", "message": "인증 서버 오류가 발생했습니다."}), 500
 
 
-@app.route('/auth/validate', methods=['GET'])
+@app.route('/auth/validate', methods=['POST'])
 def validate_token():
     """
     [토큰 인증 API] (토큰 유효성 검사 및 사용자 ID 반환)
-    Header: Authorization: Bearer {JWT}
+    Cookie: `jwt_token`
     Response: {"user_id": "..."}
     """
-    auth_header = request.headers.get('Authorization')
+    token = request.cookies.get('jwt_token')
     
-    if not auth_header or not auth_header.startswith('Bearer '):
-        print(f"[{datetime.now()}] [Validate 실패] Authorization 헤더 누락")
-        return jsonify({"error": "MISSING_TOKEN", "message": "Authorization 헤더가 누락되었거나 형식이 잘못되었습니다."}), 401
+    if not token:
+        print(f"[{datetime.now()}] [Validate 실패] JWT 쿠키 누락")
+        return jsonify({"error": "MISSING_TOKEN", "message": "JWT 쿠키가 누락되었습니다."}), 401
 
-    token = auth_header.split(' ', 1)[1]
-    
     try:
         # 1. 토큰 디코딩 및 검증 (서명 및 만료 시간 확인)
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
@@ -196,49 +201,54 @@ def validate_token():
         return jsonify({"error": "SERVER_ERROR", "message": "토큰 검증 중 서버 오류가 발생했습니다."}), 500
 
 
-@app.route('/auth/logout', methods=['GET'])
+@app.route('/auth/logout', methods=['POST'])
 def logout():
     """
-    [로그아웃 API] (토큰 블랙리스트 추가)
-    Header: Authorization: Bearer {JWT}
+    [로그아웃 API] (토큰 블랙리스트 추가 및 쿠키 삭제)
+    Cookie: `jwt_token`
     """
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        return jsonify({"error": "MISSING_TOKEN", "message": "Authorization 헤더가 필요합니다."}), 401
+    token = request.cookies.get('jwt_token')
+    if not token:
+        # 토큰이 없어도 성공적으로 응답하여 클라이언트가 로그아웃 상태로 전환되도록 함
+        return jsonify({"message": "No token provided, already logged out."}), 200
 
-    token = auth_header.split(' ', 1)[1]
-    
     try:
         # 토큰 디코딩 (만료 여부 검사 없이 서명만 검사)
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'], options={"verify_exp": False})
-        jti = payload.get('jti')
-        exp = payload.get('exp')
-        user_id = payload.get('user_id')
+        # payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'], options={"verify_exp": False})
+        # jti = payload.get('jti')
+        # exp = payload.get('exp')
+        # user_id = payload.get('user_id')
         
-        if not jti or not exp:
-             raise jwt.exceptions.DecodeError("토큰에 jti 또는 exp 클레임이 없습니다.")
+        # if not jti or not exp:
+        #      raise jwt.exceptions.DecodeError("토큰에 jti 또는 exp 클레임이 없습니다.")
 
-        conn = get_db()
-        cursor = conn.cursor()
+        # conn = get_db()
+        # cursor = conn.cursor()
         
-        # 블랙리스트 테이블에 JTI와 만료 시간(Unix timestamp) 저장
-        # 토큰이 이미 폐기된 상태일 수 있으므로 IGNORE 사용
-        cursor.execute("INSERT OR IGNORE INTO revoked_tokens (jti, expires_at) VALUES (?, ?)", (jti, exp))
-        conn.commit()
-        conn.close()
+        # # 블랙리스트 테이블에 JTI와 만료 시간(Unix timestamp) 저장
+        # cursor.execute("INSERT OR IGNORE INTO revoked_tokens (jti, expires_at) VALUES (?, ?)", (jti, exp))
+        # conn.commit()
+        # conn.close()
         
-        print(f"[{datetime.now()}] [Logout 성공] user_id={user_id}, jti={jti} 블랙리스트에 추가됨")
-        return jsonify({"message": "로그아웃 성공, 토큰이 폐기되었습니다."}), 200
+        # print(f"[{datetime.now()}] [Logout 성공] user_id={user_id}, jti={jti} 블랙리스트에 추가됨")
+        
+        # 응답 생성 및 쿠키 삭제
+        response = make_response(jsonify({"message": "로그아웃 성공, 토큰이 폐기되었습니다."}))
+        response.set_cookie('jwt_token', value='', expires=0) # 쿠키 만료시켜 삭제
+        return response
 
     except Exception as e:
         print(f"[{datetime.now()}] [Logout 오류] {e}")
-        return jsonify({"error": "LOGOUT_FAIL", "message": "로그아웃 처리 중 오류가 발생했습니다."}), 500
+        # 오류가 발생하더라도 쿠키를 삭제하여 클라이언트 측의 세션을 정리 시도
+        response = make_response(jsonify({"error": "LOGOUT_FAIL", "message": "로그아웃 처리 중 오류가 발생했습니다."}), 500)
+        response.set_cookie('jwt_token', value='', expires=0)
+        return response
 
 
-if __name__ == '__main__':
-    # 데이터베이스 초기화
-    init_db()
+# if __name__ == '__main__':
+#     # 데이터베이스 초기화
+#     init_db()
     
-    # Flask 개발 서버 실행 (Auth 서비스는 5000번 포트 사용)
-    # account.py는 8001, payment.py는 8002 포트를 사용하므로, auth는 5000번을 사용하겠습니다.
-    app.run(host='0.0.0.0', port=5000, debug=True)
+#     # Flask 개발 서버 실행 (Auth 서비스는 5000번 포트 사용)
+#     # account.py는 8001, payment.py는 8002 포트를 사용하므로, auth는 5000번을 사용하겠습니다.
+#     app.run(host='0.0.0.0', port=5000, debug=True)
