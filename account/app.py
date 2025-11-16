@@ -11,8 +11,8 @@ app = Flask(__name__)
 CORS(app)
 
 # --- 설정 ---
-DB_PATH = os.getenv('DB_PATH', 'database.db')
-SETTLEMENT_SERVICE_URL = os.getenv('SETTLEMENT_SERVICE_URL', 'http://adjustment:8003')
+DB_PATH = os.getenv('DB_PATH', './db/account.db')
+SETTLEMENT_SERVICE_URL = os.getenv('SETTLEMENT_SERVICE_URL', 'http://adjustment:5000')
 # -------------
 
 # --- 데이터베이스 연결 ---
@@ -23,8 +23,13 @@ def get_db():
     return conn
 
 # --- 데이터베이스 초기화 ---
-def init_db():
+def initialize_database():
     """데이터베이스 초기화 및 테스트 계정 추가"""
+    # Ensure the db directory exists
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -61,6 +66,14 @@ def init_db():
     conn.close()
     print(f"[{datetime.now()}] 데이터베이스 초기화 완료")
 
+@app.cli.command("init-db")
+def init_db():
+    """데이터베이스 초기화 및 테스트 계정 추가"""
+    initialize_database()
+
+# 데이터베이스 초기화
+initialize_database()
+
 
 # --- API 엔드포인트 ---
 
@@ -92,6 +105,7 @@ def register():
 
     try:
         conn = get_db()
+        print(conn)
         cursor = conn.cursor()
 
         cursor.execute('''
@@ -303,10 +317,3 @@ def debug_log_viewer():
         print(f"[{datetime.now()}] [디버그 API 오류] {e}")
         return jsonify({"error": "CONNECTION_FAILED", "message": "정산서비스에 연결할 수 없습니다."}), 503
 
-
-if __name__ == '__main__':
-    # 데이터베이스 초기화
-    init_db()
-
-    # Flask 개발 서버 실행
-    app.run(host='0.0.0.0', port=8001, debug=True)
