@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 
 # 포트 노출
-EXPOSE 8002
+EXPOSE 5000
 
 # Gunicorn으로 실행
-CMD ["gunicorn", "-b", "0.0.0.0:8002", "-w", "4", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "-w", "4", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
