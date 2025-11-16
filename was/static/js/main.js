@@ -1,13 +1,9 @@
-const ACCOUNT_API_BASE = 'http://account';
+// const ACCOUNT_API_BASE = 'http://account';
+const ACCOUNT_API_BASE = 'http://localhost:8080';
 
 // Function to handle API requests
 async function apiRequest(path, options = {}, followRedirects = true) {
-    const token = sessionStorage.getItem('jwt');
     const headers = new Headers(options.headers || {});
-
-    if (token) {
-        headers.append('Authorization', `Bearer ${token}`);
-    }
 
     options.headers = headers;
     // By default, fetch does not follow redirects. We need to handle them manually.
@@ -67,10 +63,9 @@ if (loginForm) {
                 body: JSON.stringify({ user_id: data.user_id, password: data.password }),
             });
 
-            if (response.JWT) {
-                sessionStorage.setItem('jwt', response.JWT);
-                window.location.href = '/web/main';
-            }
+            // With HttpOnly cookies, the server sets the cookie directly.
+            // Client-side JS no longer needs to store the JWT.
+            window.location.href = '/web/main';
         } catch (error) {
             errorMessageDiv.textContent = error.message;
         }
@@ -176,34 +171,15 @@ if (logoutButton) {
     logoutButton.addEventListener('click', async () => {
         try {
             // The request might fail if the token is already invalid, but we proceed with logout anyway
-            await apiRequest(`${ACCOUNT_API_BASE}/auth/logout`, {}, false);
+            await apiRequest(`${ACCOUNT_API_BASE}/auth/logout`, {
+                method: 'POST'})
         } catch (error) {
             console.warn("Logout API call failed, but proceeding with client-side logout.", error.message);
         } finally {
-            sessionStorage.removeItem('jwt');
+            // With HttpOnly cookies, the server clears the cookie.
+            // Client-side JS only needs to redirect.
             window.location.href = '/web/login';
         }
     });
 }
 
-// On page load, if user is logged in, fetch balance
-document.addEventListener('DOMContentLoaded', () => {
-    const userInfo = document.getElementById('user-info');
-    if (userInfo) {
-        const userId = userInfo.textContent.split(':')[1].trim();
-        const balanceSpan = document.getElementById('balance-info');
-        
-        apiRequest(`${ACCOUNT_API_BASE}/account/balance?user_id=${userId}`)
-            .then(data => {
-                if (data.balance !== undefined) {
-                    balanceSpan.textContent = `Balance: ${data.balance}`;
-                } else {
-                    balanceSpan.textContent = 'Balance: N/A';
-                }
-            })
-            .catch(error => {
-                console.error('Failed to fetch balance:', error);
-                balanceSpan.textContent = 'Balance: Error';
-            });
-    }
-});
