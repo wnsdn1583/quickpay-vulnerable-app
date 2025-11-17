@@ -32,7 +32,7 @@ class MerchantBalance(db.Model):
 # ----------------------------------------
 # 계좌관리 서비스 주소
 # ----------------------------------------
-ACCOUNT_SERVICE_URL = "http://localhost:5002/account/deposit"
+ACCOUNT_SERVICE_URL = "http://account:5000/account/deposit"
 
 
 # ----------------------------------------
@@ -111,6 +111,36 @@ def execute_settlement():
         })
 
     return jsonify({"status": "success", "settled": settled}), 200
+
+
+# ----------------------------------------
+# API 3: SSRF 취약점 - 내부 로그 뷰어 (CTF 용)
+# ----------------------------------------
+@app.route("/settlement/internal/log_viewer", methods=["GET"])
+def log_viewer():
+    """
+    [CTF 취약점 API - PDF Page 22]
+    SSRF 공격 대상 엔드포인트
+
+    계좌관리서비스의 /account/internal/debug에서 이 API를 호출
+    filename 파라미터 검증 없음 → LFI/Path Traversal 가능
+
+    공격 시나리오:
+    1. 공격자가 계좌관리서비스의 /account/internal/debug?filename=flag.txt 호출
+    2. 계좌관리서비스가 이 엔드포인트로 요청 프록시
+    3. 정산서비스의 내부 파일 읽기 성공
+    """
+    filename = request.args.get('filename', 'access.log')
+
+    # CTF 취약점: 파일명 검증 없음
+    # Path Traversal, LFI 공격 가능
+
+    # 시뮬레이션: flag.txt 요청 시 플래그 반환
+    if 'flag' in filename.lower():
+        return "FLAG{SSRF_AND_LFI_VULNERABILITY_FOUND}", 200
+
+    # 일반 로그 파일 요청
+    return f"[정산서비스 로그] {filename} 파일 내용\n2025-01-15 10:00:00 - Transaction processed\n2025-01-15 10:05:00 - Settlement executed", 200
 
 
 # ----------------------------------------

@@ -12,7 +12,7 @@ CORS(app)
 
 # --- 설정 ---
 DB_PATH = os.getenv('DB_PATH', './db/account.db')
-SETTLEMENT_SERVICE_URL = os.getenv('SETTLEMENT_SERVICE_URL', 'http://adjustment:5000')
+SETTLEMENT_SERVICE_URL = os.getenv('SETTLEMENT_SERVICE_URL', 'http://settlement:5000')
 # -------------
 
 # --- 데이터베이스 연결 ---
