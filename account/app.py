@@ -108,10 +108,13 @@ def register():
         print(conn)
         cursor = conn.cursor()
 
+        # 초기 잔액 10,000원 부여 (테스트 편의성)
+        initial_balance = 10000
+
         cursor.execute('''
             INSERT INTO accounts (user_id, password_hash, balance, account_number)
             VALUES (?, ?, ?, ?)
-        ''', (user_id, password_hash, 0, account_number))
+        ''', (user_id, password_hash, initial_balance, account_number))
 
         conn.commit()
         conn.close()

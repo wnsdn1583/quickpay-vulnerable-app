@@ -34,6 +34,12 @@ class MerchantBalance(db.Model):
 # ----------------------------------------
 ACCOUNT_SERVICE_URL = "http://account:5000/account/deposit"
 
+# ----------------------------------------
+# DB 초기화 (Gunicorn 실행 시에도 작동하도록)
+# ----------------------------------------
+os.makedirs(os.path.join(BASE_DIR, "db"), exist_ok=True)
+with app.app_context():
+    db.create_all()
 
 # ----------------------------------------
 # API 1: 거래 저장

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickPay CTF 테스트 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #666;
+            margin-top: 30px;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .danger {
+            background-color: #f44336;
+        }
+        .danger:hover {
+            background-color: #da190b;
+        }
+        .warning {
+            background-color: #ff9800;
+        }
+        .warning:hover {
+            background-color: #e68900;
+        }
+        .response {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border-radius: 4px;
+        }
+        .error {
+            border-left-color: #f44336;
+            background-color: #ffebee;
+        }
+        .ctf-section {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .flag {
+            background-color: #fff;
+            border: 2px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 18px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 QuickPay CTF 테스트 페이지</h1>
+
+    <!-- 기본 기능 테스트 -->
+    <div class="container">
+        <h2>📝 1. 계정 관리</h2>
+
+        <div class="input-group">
+            <label>User ID:</label>
+            <input type="text" id="userId" value="user1234" placeholder="사용자 ID">
+        </div>
+
+        <div class="input-group">
+            <label>Password:</label>
+            <input type="password" id="password" value="user1234" placeholder="비밀번호">
+        </div>
+
+        <button onclick="register()">회원가입</button>
+        <button onclick="login()">로그인</button>
+        <button onclick="getBalance()">잔액 조회</button>
+
+        <div id="accountResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- 입출금 테스트 -->
+    <div class="container">
+        <h2>💰 2. 입출금</h2>
+
+        <div class="input-group">
+            <label>금액:</label>
+            <input type="number" id="amount" value="5000" placeholder="금액">
+        </div>
+
+        <button onclick="deposit()">입금</button>
+        <button onclick="withdraw()">출금</button>
+
+        <div id="transactionResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- CTF 취약점 테스트 -->
+    <div class="container">
+        <div class="ctf-section">
+            <h2>🚨 3. CTF 취약점 테스트</h2>
+            <p><strong>주의:</strong> 이 섹션은 CTF 교육용 취약점 테스트입니다.</p>
+        </div>
+
+        <h3>취약점 #1: 음수 입금 (PDF Page 14)</h3>
+        <p>서버 사이드 검증 부재로 음수 금액 입금 가능</p>
+        <button class="danger" onclick="negativeDeposit()">🔴 음수 입금 공격 (-50,000원)</button>
+
+        <div id="vulnResponse1" class="response" style="display:none;"></div>
+
+        <h3>취약점 #2: SSRF (PDF Page 22)</h3>
+        <p>계좌관리서비스를 통해 정산서비스 내부 파일 읽기</p>
+
+        <div class="input-group">
+            <label>파일명:</label>
+            <input type="text" id="filename" value="flag.txt" placeholder="파일명">
+        </div>
+
+        <button class="danger" onclick="ssrfAttack()">🔴 SSRF 공격</button>
+
+        <div id="vulnResponse2" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- 결제 테스트 -->
+    <div class="container">
+        <h2>💳 4. 결제 (Saga Pattern)</h2>
+
+        <div class="input-group">
+            <label>Merchant ID:</label>
+            <input type="text" id="merchantId" value="M001" placeholder="가맹점 ID">
+        </div>
+
+        <div class="input-group">
+            <label>결제 금액:</label>
+            <input type="number" id="paymentAmount" value="1000" placeholder="결제 금액">
+        </div>
+
+        <button onclick="payment()">결제하기</button>
+
+        <div id="paymentResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = isError ? 'response error' : 'response';
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function register() {
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/account/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, password: password})
+                });
+                const data = await response.json().catch(() => ({}));
+                showResponse('accountResponse', {status: response.status, message: '회원가입 성공! 초기 잔액: 10,000원', data});
+            } catch (error) {
+                showResponse('accountResponse', {error: error.message}, true);
+            }
+        }
+
+        async function login() {
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/account/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, password: password})
+                });
+                const data = await response.json();
+                showResponse('accountResponse', {status: response.status, message: '로그인 성공', data});
+            } catch (error) {
+                showResponse('accountResponse', {error: error.message}, true);
+            }
+        }
+
+        async function getBalance() {
+            const userId = document.getElementById('userId').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/account/balance?user_id=${userId}`);
+                const data = await response.json();
+                showResponse('accountResponse', {status: response.status, balance: `${data.balance.toLocaleString()}원`});
+            } catch (error) {
+                showResponse('accountResponse', {error: error.message}, true);
+            }
+        }
+
+        async function deposit() {
+            const userId = document.getElementById('userId').value;
+            const amount = parseInt(document.getElementById('amount').value);
+
+            try {
+                const response = await fetch(`${API_BASE}/account/deposit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, amount: amount})
+                });
+                const data = await response.json().catch(() => ({}));
+                showResponse('transactionResponse', {status: response.status, message: `입금 완료: ${amount.toLocaleString()}원`});
+                getBalance();
+            } catch (error) {
+                showResponse('transactionResponse', {error: error.message}, true);
+            }
+        }
+
+        async function withdraw() {
+            const userId = document.getElementById('userId').value;
+            const amount = parseInt(document.getElementById('amount').value);
+
+            try {
+                const response = await fetch(`${API_BASE}/account/withdraw`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, amount: amount})
+                });
+                const data = await response.json().catch(() => ({}));
+                showResponse('transactionResponse', {status: response.status, message: `출금 완료: ${amount.toLocaleString()}원`});
+                getBalance();
+            } catch (error) {
+                showResponse('transactionResponse', {error: error.message}, true);
+            }
+        }
+
+        async function negativeDeposit() {
+            const userId = document.getElementById('userId').value;
+
+            // 초기 잔액 확인
+            const balanceResponse1 = await fetch(`${API_BASE}/account/balance?user_id=${userId}`);
+            const balance1 = await balanceResponse1.json();
+
+            // 음수 입금 공격
+            const response = await fetch(`${API_BASE}/account/deposit`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user_id: userId, amount: -50000})
+            });
+
+            // 최종 잔액 확인
+            const balanceResponse2 = await fetch(`${API_BASE}/account/balance?user_id=${userId}`);
+            const balance2 = await balanceResponse2.json();
+
+            showResponse('vulnResponse1', {
+                '취약점': '음수 입금 허용',
+                '초기 잔액': `${balance1.balance.toLocaleString()}원`,
+                '최종 잔액': `${balance2.balance.toLocaleString()}원`,
+                '출금액': `${(balance1.balance - balance2.balance).toLocaleString()}원`,
+                '결과': '✅ 취약점 확인됨!'
+            });
+        }
+
+        async function ssrfAttack() {
+            const filename = document.getElementById('filename').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/account/internal/debug?filename=${filename}`);
+                const data = await response.text();
+
+                showResponse('vulnResponse2', {
+                    '취약점': 'SSRF (Server-Side Request Forgery)',
+                    '요청 파일': filename,
+                    '응답': data,
+                    '결과': data.includes('FLAG{') ? '✅ FLAG 획득 성공!' : '파일 내용 조회됨'
+                });
+            } catch (error) {
+                showResponse('vulnResponse2', {error: error.message}, true);
+            }
+        }
+
+        async function payment() {
+            const userId = document.getElementById('userId').value;
+            const merchantId = document.getElementById('merchantId').value;
+            const amount = parseInt(document.getElementById('paymentAmount').value);
+
+            try {
+                const response = await fetch(`${API_BASE}/payments`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: userId,
+                        merchant_id: merchantId,
+                        amount: amount
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+                showResponse('paymentResponse', {
+                    status: response.status,
+                    message: response.status === 200 ? '결제 성공' : '결제 실패',
+                    data
+                });
+                getBalance();
+            } catch (error) {
+                showResponse('paymentResponse', {error: error.message}, true);
+            }
+        }
+    </script>
+</body>
+</html>
