@@ -197,32 +197,18 @@
 <div class="settlement-container">
     <!-- Settlement Execution -->
     <div class="settlement-card">
-        <h2>📊 Settlement</h2>
-        <p class="subtitle">Execute merchant settlement process</p>
+        <h2>📊 정산</h2>
+        <p class="subtitle">가맹점 정산 처리</p>
 
         <div class="info-box">
-            <strong>Warning:</strong> This will settle all pending merchant transactions and transfer funds to merchant accounts.
+            <strong>주의:</strong> 모든 대기 중인 가맹점 거래를 정산하고 가맹점 계좌로 자금을 이체합니다.
         </div>
 
         <div id="settlement-message" class="alert"></div>
 
-        <button onclick="executeSettlement()" class="execute-btn">Execute Settlement</button>
+        <button onclick="executeSettlement()" class="execute-btn">정산 실행</button>
     </div>
 
-    <!-- Log Viewer -->
-    <div class="log-viewer-card">
-        <h3>🔍 Log Viewer</h3>
-        <p class="subtitle">View settlement service logs (Internal Use Only)</p>
-
-        <div class="input-group">
-            <label for="log-filename">Log Filename</label>
-            <input type="text" id="log-filename" placeholder="e.g., access.log, settlement.log" value="access.log">
-        </div>
-
-        <button onclick="viewLog()" class="view-log-btn">View Log</button>
-
-        <div id="log-output" class="log-output"></div>
-    </div>
 </div>
 
 <script>
@@ -239,35 +225,14 @@
 
             if (response.ok) {
                 messageDiv.className = 'alert success';
-                messageDiv.textContent = `Settlement executed successfully! ${data.settled ? data.settled.length : 0} merchants settled.`;
+                messageDiv.textContent = `정산이 성공적으로 실행되었습니다! ${data.settled ? data.settled.length : 0}개 가맹점 정산 완료`;
             } else {
                 messageDiv.className = 'alert error';
-                messageDiv.textContent = data.message || 'Settlement execution failed.';
+                messageDiv.textContent = data.message || '정산 실행에 실패했습니다.';
             }
         } catch (error) {
             messageDiv.className = 'alert error';
-            messageDiv.textContent = 'Failed to connect to settlement service.';
-        }
-    }
-
-    async function viewLog() {
-        const filename = document.getElementById('log-filename').value;
-        const outputDiv = document.getElementById('log-output');
-
-        if (!filename) {
-            alert('Please enter a log filename.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${window.location.origin}/settlement/internal/log_viewer?filename=${encodeURIComponent(filename)}`);
-            const logContent = await response.text();
-
-            outputDiv.textContent = logContent;
-            outputDiv.classList.add('show');
-        } catch (error) {
-            outputDiv.textContent = 'Error: Failed to retrieve log file.';
-            outputDiv.classList.add('show');
+            messageDiv.textContent = '정산 서비스에 연결할 수 없습니다.';
         }
     }
 </script>

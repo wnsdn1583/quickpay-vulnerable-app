@@ -156,32 +156,32 @@
 
 <div class="payment-container">
     <div class="payment-card">
-        <h2>💳 Payment</h2>
-        <p class="subtitle">Send payment to merchants</p>
+        <h2>💳 결제</h2>
+        <p class="subtitle">가맹점 결제하기</p>
 
         <div class="info-box">
-            <strong>Note:</strong> Select a merchant and enter the payment amount.
+            <strong>안내:</strong> 가맹점을 선택하고 결제 금액을 입력하세요.
         </div>
 
         <div id="error-message" class="alert"></div>
 
         <form id="payment-form">
             <div class="input-group">
-                <label for="merchant_id">Merchant</label>
+                <label for="merchant_id">가맹점</label>
                 <select id="merchant_id" name="merchant_id" required>
-                    <option value="">Select a merchant</option>
-                    <option value="merchant_coffee">☕ Starbucks Coffee</option>
-                    <option value="merchant_store">🏪 CU Convenience Store</option>
-                    <option value="merchant_food">🍔 McDonald's</option>
-                    <option value="merchant_shopping">🛒 Coupang Shopping</option>
-                    <option value="merchant_gas">⛽ GS Caltex</option>
+                    <option value="">가맹점 선택</option>
+                    <option value="merchant_coffee">☕ 스타벅스</option>
+                    <option value="merchant_store">🏪 CU 편의점</option>
+                    <option value="merchant_food">🍔 맥도날드</option>
+                    <option value="merchant_shopping">🛒 쿠팡</option>
+                    <option value="merchant_gas">⛽ GS칼텍스</option>
                 </select>
             </div>
             <div class="input-group">
-                <label for="amount">Amount (KRW)</label>
-                <input type="number" id="amount" name="amount" placeholder="Enter amount" min="1" required>
+                <label for="amount">금액 (원)</label>
+                <input type="number" id="amount" name="amount" placeholder="금액 입력" min="1" required>
             </div>
-            <button type="submit" class="payment-btn">Pay Now</button>
+            <button type="submit" class="payment-btn">결제하기</button>
         </form>
     </div>
 </div>

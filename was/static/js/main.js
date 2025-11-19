@@ -173,13 +173,13 @@ if (paymentForm) {
         const errorMessageDiv = document.getElementById('error-message');
 
         if (!merchantId) {
-            errorMessageDiv.textContent = 'Please select a merchant';
+            errorMessageDiv.textContent = '가맹점을 선택해주세요';
             errorMessageDiv.className = 'alert error';
             return;
         }
 
         if (isNaN(amount) || amount <= 0) {
-            errorMessageDiv.textContent = 'Please enter a valid amount';
+            errorMessageDiv.textContent = '올바른 금액을 입력해주세요';
             errorMessageDiv.className = 'alert error';
             return;
         }
@@ -194,7 +194,7 @@ if (paymentForm) {
                     amount: amount
                 }),
             });
-            errorMessageDiv.textContent = `Payment of ₩${amount.toLocaleString()} to ${merchantId} completed successfully!`;
+            errorMessageDiv.textContent = `${amount.toLocaleString()}원 결제가 완료되었습니다!`;
             errorMessageDiv.className = 'alert success';
             setTimeout(() => {
                 window.location.href = '/web/main';
