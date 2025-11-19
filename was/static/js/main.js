@@ -120,7 +120,7 @@ if (depositForm) {
             await apiRequest(`${ACCOUNT_API_BASE}/account/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount }),
+                body: JSON.stringify({ user_id: CURRENT_USER_ID, amount: amount }),
             });
             alert('입금 성공');
             window.location.href = '/web/main';
@@ -152,7 +152,7 @@ if (withdrawForm) {
             await apiRequest(`${ACCOUNT_API_BASE}/account/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount }),
+                body: JSON.stringify({ user_id: CURRENT_USER_ID, amount: amount }),
             });
             alert('출금 성공');
             window.location.href = '/web/main';

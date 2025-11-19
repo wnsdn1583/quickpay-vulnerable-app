@@ -38,6 +38,10 @@
         {% block content %}{% endblock %}
     </main>
 
+    <script>
+        // Pass user_id from server to JavaScript
+        const CURRENT_USER_ID = "{{ g.user_id if g.user_id else '' }}";
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
