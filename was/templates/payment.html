@@ -1,0 +1,188 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .payment-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 20px;
+    }
+
+    .payment-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+        animation: fadeIn 0.4s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .payment-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        transform: translateY(-4px);
+    }
+
+    .payment-card h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--dark);
+    }
+
+    .payment-card .subtitle {
+        color: var(--gray);
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+
+    .input-group {
+        margin-bottom: 28px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 14px;
+    }
+
+    .input-group input,
+    .input-group select {
+        width: 100%;
+        padding: 16px 18px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s;
+        background: white;
+        box-sizing: border-box;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(94, 53, 177, 0.1);
+    }
+
+    .payment-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: var(--primary);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .payment-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(94, 53, 177, 0.4);
+    }
+
+    .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid var(--primary);
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: #1565c0;
+    }
+
+    .info-box strong {
+        font-weight: 600;
+    }
+
+    .merchant-option {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+        animation: slideDown 0.3s;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert.error {
+        background: #ffebee;
+        color: #c62828;
+        border-left: 4px solid #c62828;
+        display: block;
+    }
+
+    .alert.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-left: 4px solid #4caf50;
+        display: block;
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-card">
+        <h2>💳 Payment</h2>
+        <p class="subtitle">Send payment to merchants</p>
+
+        <div class="info-box">
+            <strong>Note:</strong> Select a merchant and enter the payment amount.
+        </div>
+
+        <div id="error-message" class="alert"></div>
+
+        <form id="payment-form">
+            <div class="input-group">
+                <label for="merchant_id">Merchant</label>
+                <select id="merchant_id" name="merchant_id" required>
+                    <option value="">Select a merchant</option>
+                    <option value="merchant_coffee">☕ Starbucks Coffee</option>
+                    <option value="merchant_store">🏪 CU Convenience Store</option>
+                    <option value="merchant_food">🍔 McDonald's</option>
+                    <option value="merchant_shopping">🛒 Coupang Shopping</option>
+                    <option value="merchant_gas">⛽ GS Caltex</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="amount">Amount (KRW)</label>
+                <input type="number" id="amount" name="amount" placeholder="Enter amount" min="1" required>
+            </div>
+            <button type="submit" class="payment-btn">Pay Now</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

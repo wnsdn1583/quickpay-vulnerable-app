@@ -1,0 +1,248 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .debug-container {
+        max-width: 900px;
+        margin: 60px auto;
+        padding: 20px;
+    }
+
+    .debug-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        animation: fadeIn 0.4s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .debug-card h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--dark);
+    }
+
+    .debug-card .subtitle {
+        color: var(--gray);
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+
+    .warning-box {
+        background: #ffebee;
+        border-left: 4px solid #f44336;
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: #c62828;
+    }
+
+    .warning-box strong {
+        font-weight: 600;
+    }
+
+    .input-group {
+        margin-bottom: 20px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 14px;
+    }
+
+    .input-group input,
+    .input-group select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.3s;
+        background: white;
+        box-sizing: border-box;
+        font-family: 'Courier New', monospace;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+        outline: none;
+        border-color: #f44336;
+        box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+    }
+
+    .debug-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f44336;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .debug-btn:hover {
+        background: #d32f2f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+    }
+
+    .debug-output {
+        margin-top: 32px;
+        padding: 24px;
+        background: #263238;
+        border-radius: 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        display: none;
+        max-height: 500px;
+        overflow-y: auto;
+        border: 1px solid #37474f;
+        color: #4caf50;
+        line-height: 1.6;
+    }
+
+    .debug-output.show {
+        display: block;
+        animation: slideDown 0.3s;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .debug-output .flag {
+        color: #ff5722;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .quick-tests {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .quick-test-btn {
+        padding: 12px;
+        background: #f5f5f5;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-family: 'Courier New', monospace;
+        transition: all 0.3s;
+        text-align: left;
+    }
+
+    .quick-test-btn:hover {
+        background: #e0e0e0;
+        transform: translateY(-2px);
+    }
+
+    .info-text {
+        color: var(--gray);
+        font-size: 13px;
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
+</style>
+
+<div class="debug-container">
+    <div class="debug-card">
+        <h2>🐛 Debug Console</h2>
+        <p class="subtitle">Internal debugging interface - For developers only</p>
+
+        <div class="warning-box">
+            <strong>⚠️ WARNING:</strong> This is a development debugging tool. Do NOT use in production!
+        </div>
+
+        <p class="info-text">
+            This interface allows you to inspect internal service logs and debug information.
+            Enter a filename or URL to retrieve debug data from the account service.
+        </p>
+
+        <div class="input-group">
+            <label for="debug-filename">Target File/Resource</label>
+            <input type="text" id="debug-filename" placeholder="e.g., access.log, settlement.log" value="access.log">
+        </div>
+
+        <div class="quick-tests">
+            <button class="quick-test-btn" onclick="quickTest('access.log')">📄 access.log</button>
+            <button class="quick-test-btn" onclick="quickTest('error.log')">📄 error.log</button>
+            <button class="quick-test-btn" onclick="quickTest('flag.txt')">🚩 flag.txt</button>
+            <button class="quick-test-btn" onclick="quickTest('../../../etc/passwd')">🔒 /etc/passwd</button>
+        </div>
+
+        <button onclick="fetchDebugInfo()" class="debug-btn">🔍 Fetch Debug Info</button>
+
+        <div id="debug-output" class="debug-output"></div>
+    </div>
+</div>
+
+<script>
+    function quickTest(filename) {
+        document.getElementById('debug-filename').value = filename;
+        fetchDebugInfo();
+    }
+
+    async function fetchDebugInfo() {
+        const filename = document.getElementById('debug-filename').value;
+        const outputDiv = document.getElementById('debug-output');
+
+        if (!filename) {
+            alert('Please enter a filename or resource path.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.location.origin}/account/internal/debug?filename=${encodeURIComponent(filename)}`);
+            const debugContent = await response.text();
+
+            // Highlight FLAG if found
+            let formattedContent = debugContent;
+            if (debugContent.includes('FLAG{')) {
+                formattedContent = debugContent.replace(/(FLAG\{[^}]+\})/g, '<span class="flag">$1</span>');
+                outputDiv.innerHTML = `<strong>🎯 Debug Output:</strong>\n\n${formattedContent}`;
+            } else {
+                outputDiv.textContent = `🔍 Debug Output:\n\n${debugContent}`;
+            }
+
+            outputDiv.classList.add('show');
+        } catch (error) {
+            outputDiv.textContent = `❌ Error: Failed to retrieve debug information.\n${error.message}`;
+            outputDiv.classList.add('show');
+        }
+    }
+</script>
+{% endblock %}

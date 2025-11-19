@@ -1,0 +1,274 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .settlement-container {
+        max-width: 800px;
+        margin: 60px auto;
+        padding: 20px;
+    }
+
+    .settlement-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+        animation: fadeIn 0.4s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .settlement-card h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--dark);
+    }
+
+    .settlement-card .subtitle {
+        color: var(--gray);
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+
+    .execute-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: var(--secondary);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .execute-btn:hover {
+        background: #2d8e47;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 168, 83, 0.4);
+    }
+
+    .log-viewer-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    .log-viewer-card h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--dark);
+    }
+
+    .input-group {
+        margin-bottom: 20px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 14px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.3s;
+        background: white;
+        box-sizing: border-box;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(94, 53, 177, 0.1);
+    }
+
+    .view-log-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: var(--primary);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .view-log-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(94, 53, 177, 0.4);
+    }
+
+    .log-output {
+        margin-top: 24px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        display: none;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        color: var(--dark);
+    }
+
+    .log-output.show {
+        display: block;
+        animation: slideDown 0.3s;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: #856404;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+        animation: slideDown 0.3s;
+    }
+
+    .alert.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-left: 4px solid #4caf50;
+        display: block;
+    }
+
+    .alert.error {
+        background: #ffebee;
+        color: #c62828;
+        border-left: 4px solid #c62828;
+        display: block;
+    }
+</style>
+
+<div class="settlement-container">
+    <!-- Settlement Execution -->
+    <div class="settlement-card">
+        <h2>📊 Settlement</h2>
+        <p class="subtitle">Execute merchant settlement process</p>
+
+        <div class="info-box">
+            <strong>Warning:</strong> This will settle all pending merchant transactions and transfer funds to merchant accounts.
+        </div>
+
+        <div id="settlement-message" class="alert"></div>
+
+        <button onclick="executeSettlement()" class="execute-btn">Execute Settlement</button>
+    </div>
+
+    <!-- Log Viewer -->
+    <div class="log-viewer-card">
+        <h3>🔍 Log Viewer</h3>
+        <p class="subtitle">View settlement service logs (Internal Use Only)</p>
+
+        <div class="input-group">
+            <label for="log-filename">Log Filename</label>
+            <input type="text" id="log-filename" placeholder="e.g., access.log, settlement.log" value="access.log">
+        </div>
+
+        <button onclick="viewLog()" class="view-log-btn">View Log</button>
+
+        <div id="log-output" class="log-output"></div>
+    </div>
+</div>
+
+<script>
+    async function executeSettlement() {
+        const messageDiv = document.getElementById('settlement-message');
+
+        try {
+            const response = await fetch(`${window.location.origin}/settlement/execute`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageDiv.className = 'alert success';
+                messageDiv.textContent = `Settlement executed successfully! ${data.settled ? data.settled.length : 0} merchants settled.`;
+            } else {
+                messageDiv.className = 'alert error';
+                messageDiv.textContent = data.message || 'Settlement execution failed.';
+            }
+        } catch (error) {
+            messageDiv.className = 'alert error';
+            messageDiv.textContent = 'Failed to connect to settlement service.';
+        }
+    }
+
+    async function viewLog() {
+        const filename = document.getElementById('log-filename').value;
+        const outputDiv = document.getElementById('log-output');
+
+        if (!filename) {
+            alert('Please enter a log filename.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.location.origin}/settlement/internal/log_viewer?filename=${encodeURIComponent(filename)}`);
+            const logContent = await response.text();
+
+            outputDiv.textContent = logContent;
+            outputDiv.classList.add('show');
+        } catch (error) {
+            outputDiv.textContent = 'Error: Failed to retrieve log file.';
+            outputDiv.classList.add('show');
+        }
+    }
+</script>
+{% endblock %}

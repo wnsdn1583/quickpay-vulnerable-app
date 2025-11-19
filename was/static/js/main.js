@@ -162,6 +162,50 @@ if (withdrawForm) {
     });
 }
 
+// Payment Form
+const paymentForm = document.getElementById('payment-form');
+if (paymentForm) {
+    paymentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(paymentForm);
+        const merchantId = formData.get('merchant_id');
+        const amount = parseFloat(formData.get('amount'));
+        const errorMessageDiv = document.getElementById('error-message');
+
+        if (!merchantId) {
+            errorMessageDiv.textContent = 'Please select a merchant';
+            errorMessageDiv.className = 'alert error';
+            return;
+        }
+
+        if (isNaN(amount) || amount <= 0) {
+            errorMessageDiv.textContent = 'Please enter a valid amount';
+            errorMessageDiv.className = 'alert error';
+            return;
+        }
+
+        try {
+            await apiRequest(`${ACCOUNT_API_BASE}/payments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: CURRENT_USER_ID,
+                    merchant_id: merchantId,
+                    amount: amount
+                }),
+            });
+            errorMessageDiv.textContent = `Payment of ₩${amount.toLocaleString()} to ${merchantId} completed successfully!`;
+            errorMessageDiv.className = 'alert success';
+            setTimeout(() => {
+                window.location.href = '/web/main';
+            }, 2000);
+        } catch (error) {
+            errorMessageDiv.textContent = error.message;
+            errorMessageDiv.className = 'alert error';
+        }
+    });
+}
+
 
 // --- Page Load and Auth Logic ---
 
