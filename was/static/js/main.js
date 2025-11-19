@@ -1,5 +1,5 @@
-// const ACCOUNT_API_BASE = 'http://account';
-const ACCOUNT_API_BASE = 'http://localhost:8080';
+// Dynamically use current host (works for both local and deployed environments)
+const ACCOUNT_API_BASE = window.location.origin;
 
 // Function to handle API requests
 async function apiRequest(path, options = {}, followRedirects = true) {

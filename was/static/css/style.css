@@ -1,9 +1,21 @@
+/* CSS Variables */
+:root {
+    --primary: #5e35b1;
+    --primary-dark: #4527a0;
+    --secondary: #34a853;
+    --dark: #202124;
+    --gray: #5f6368;
+    --light: #f8f9fa;
+    --border: #dadce0;
+}
+
 /* General Body Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     margin: 0;
-    background-color: #f4f4f9;
-    color: #333;
+    background-color: var(--light);
+    color: var(--dark);
+    line-height: 1.6;
 }
 
 .container {
@@ -38,7 +50,10 @@ body {
 }
 
 .navbar-logo {
-    color: #5e35b1;
+    background: linear-gradient(135deg, var(--primary), #667eea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     justify-self: start;
     cursor: pointer;
     text-decoration: none;
@@ -46,6 +61,11 @@ body {
     display: flex;
     align-items: center;
     font-weight: bold;
+    transition: transform 0.3s;
+}
+
+.navbar-logo:hover {
+    transform: scale(1.05);
 }
 
 .nav-menu {
@@ -64,7 +84,7 @@ body {
 .nav-links {
     color: #333;
     display: flex;
-    align-items.center;
+    align-items: center;
     text-decoration: none;
     padding: 0.5rem 1rem;
     height: 100%;
@@ -85,17 +105,21 @@ body {
 /* Button Styles */
 .btn {
     padding: 10px 22px;
-    border-radius: 4px;
+    border-radius: 6px;
     text-decoration: none;
     border: none;
     cursor: pointer;
     font-size: 1rem;
-    background-color: #5e35b1;
+    background-color: var(--primary);
     color: #fff;
+    font-weight: 600;
+    transition: all 0.3s;
 }
 
 .btn:hover {
-    background-color: #4527a0;
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(94, 53, 177, 0.3);
 }
 
 .btn-outline {
@@ -119,10 +143,16 @@ body {
 .form-container {
     background: #fff;
     padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    max-width: 400px;
-    margin: 40px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    max-width: 450px;
+    margin: 60px auto;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.form-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
 .form-container h2 {
@@ -141,12 +171,23 @@ body {
     font-weight: bold;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     box-sizing: border-box;
+    font-size: 15px;
+    transition: all 0.3s;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(94, 53, 177, 0.1);
 }
 
 /* Content Section */
@@ -161,6 +202,28 @@ body {
 /* Error Message */
 .error-message {
     color: #d32f2f;
-    margin-top: 10px;
+    margin-top: 15px;
     text-align: center;
+    padding: 12px;
+    background: #ffebee;
+    border-radius: 6px;
+    border-left: 4px solid #d32f2f;
+    font-size: 14px;
+    display: none;
+}
+
+.error-message:not(:empty) {
+    display: block;
+    animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
