@@ -1,20 +1,161 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="form-container">
-    <h2>로그인</h2>
-    <form id="login-form">
-        <input type="hidden" id="redirect_to" name="redirect_to" value="{{ redirect_to }}">
-        <div class="form-group">
-            <label for="user_id">아이디</label>
-            <input type="text" id="user_id" name="user_id" required>
+<style>
+    .login-container {
+        min-height: calc(100vh - 180px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: -20px -20px;
+        padding: 60px 20px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        padding: 50px;
+        max-width: 450px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.4s;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-card h2 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: var(--dark);
+        text-align: center;
+    }
+
+    .input-group {
+        margin-bottom: 24px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 14px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.3s;
+        background: white;
+        box-sizing: border-box;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(94, 53, 177, 0.1);
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: var(--primary);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .login-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(94, 53, 177, 0.4);
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+        color: var(--gray);
+    }
+
+    .register-link a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+        animation: slideDown 0.3s;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert.error {
+        background: #ffebee;
+        color: #c62828;
+        border-left: 4px solid #c62828;
+        display: block;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <h2>Sign In</h2>
+        <div id="error-message" class="alert"></div>
+        <form id="login-form">
+            <input type="hidden" id="redirect_to" name="redirect_to" value="{{ redirect_to }}">
+            <div class="input-group">
+                <label for="user_id">Username</label>
+                <input type="text" id="user_id" name="user_id" placeholder="Enter your username" required autofocus>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+        <div class="register-link">
+            Don't have an account? <a href="/web/register">Sign up</a>
         </div>
-        <div class="form-group">
-            <label for="password">비밀번호</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">입력</button>
-    </form>
-    <div id="error-message" class="error-message"></div>
+    </div>
 </div>
 {% endblock %}
