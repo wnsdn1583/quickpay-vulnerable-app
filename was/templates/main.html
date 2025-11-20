@@ -262,54 +262,54 @@
 {% if g.user_id %}
 <!-- Logged in: Dashboard -->
 <div class="dashboard">
-    <h1 class="dashboard-title">Welcome back, {{ g.user_id }}!</h1>
+    <h1 class="dashboard-title">{{ g.user_id }}님, 환영합니다!</h1>
 
     <div class="balance-card">
-        <div class="balance-label">Available Balance</div>
+        <div class="balance-label">사용 가능 잔액</div>
         <div class="balance-amount">₩ {{ g.user_balance|default('---', true) }}</div>
-        <div class="account-info">Account: 1002-****-****</div>
+        <div class="account-info">계좌: 1002-****-****</div>
     </div>
 
     <div class="quick-actions">
-        <a href="/web/deposit" class="action-btn action-deposit">💰 Deposit</a>
-        <a href="/web/withdraw" class="action-btn action-withdraw">💸 Withdraw</a>
-        <a href="/web/fund" class="action-btn action-fund">📊 Fund</a>
+        <a href="/web/deposit" class="action-btn action-deposit">💰 입금</a>
+        <a href="/web/withdraw" class="action-btn action-withdraw">💸 출금</a>
+        <a href="/web/fund" class="action-btn action-fund">📊 사모펀드</a>
     </div>
 </div>
 {% else %}
 <!-- Not logged in: Hero + Features -->
 <section class="hero">
-    <h1>The Future of Digital Banking</h1>
-    <p>Experience seamless, secure, and intelligent banking designed for the modern world.</p>
+    <h1>디지털 뱅킹의 미래</h1>
+    <p>현대 세계를 위해 설계된 원활하고 안전하며 지능적인 뱅킹을 경험하세요.</p>
     <div class="hero-buttons">
-        <a href="/web/login" class="hero-btn hero-btn-primary">Get Started</a>
-        <a href="/web/register" class="hero-btn hero-btn-secondary">Open Account</a>
+        <a href="/web/login" class="hero-btn hero-btn-primary">시작하기</a>
+        <a href="/web/register" class="hero-btn hero-btn-secondary">계좌 개설</a>
     </div>
 </section>
 
 <section class="features">
-    <h2>Why Choose QuickPay?</h2>
+    <h2>왜 QuickPay를 선택해야 할까요?</h2>
     <div class="features-grid">
         <div class="feature-card">
             <div class="feature-icon">🔒</div>
-            <h3>Bank-Level Security</h3>
-            <p>Advanced encryption and multi-factor authentication keep your money safe 24/7.</p>
+            <h3>은행 수준의 보안</h3>
+            <p>고급 암호화와 다중 인증으로 24시간 안전하게 자산을 보호합니다.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon">⚡</div>
-            <h3>Instant Transfers</h3>
-            <p>Send and receive money instantly with zero fees between QuickPay accounts.</p>
+            <h3>즉시 송금</h3>
+            <p>QuickPay 계좌 간 수수료 없이 즉시 송금하고 받을 수 있습니다.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon">📱</div>
-            <h3>Mobile First</h3>
-            <p>Manage your finances anywhere, anytime with our award-winning platform.</p>
+            <h3>모바일 우선</h3>
+            <p>수상 경력에 빛나는 플랫폼으로 언제 어디서나 재무를 관리하세요.</p>
         </div>
     </div>
 </section>
 {% endif %}
 
 <footer class="footer">
-    <p>&copy; 2025 QuickPay Digital Banking. All rights reserved.</p>
+    <p>&copy; 2025 QuickPay 디지털 뱅킹. All rights reserved.</p>
 </footer>
 {% endblock %}
