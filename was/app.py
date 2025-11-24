@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, g, redirect, url_for
+from flask import Flask, render_template, request, g, redirect, url_for, jsonify
 import requests 
 
 app = Flask(__name__, static_folder='static')
@@ -51,6 +51,8 @@ def withdraw():
 def fund():
     if not g.user_id:
         return redirect(url_for('login'))
+    if g.user_balance <= 700000000000000:
+        return jsonify({"error": "INSUFFICIENT_FUNDS", "message": "잔액이 700조 이상인 고객만 이용가능합니다."}), 400
     return render_template('fund.html')
 
 @app.route('/web/payment')
