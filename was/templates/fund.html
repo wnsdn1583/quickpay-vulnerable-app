@@ -2,7 +2,48 @@
 
 {% block content %}
 <div class="content-section">
-    <h1>사모펀드</h1>
-    <p>현재 준비중인 서비스입니다.</p>
+    <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-xl shadow-2xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2 border-b pb-2">사모펀드: 지원서 업로드</h1>
+        <p class="text-gray-600 mb-6">지원서를 업로드해 주세요. </p>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            <div class="flex flex-col">
+                <label for="file" class="text-lg font-medium text-gray-700 mb-1">업로드할 파일 선택:</label>
+                <input type="file" name="file" id="file" required 
+                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 p-2.5 
+                              focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            
+            <button type="submit" 
+                    class="w-full px-5 py-3 text-lg font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 
+                           transition duration-150 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-indigo-500/50">
+                업로드
+            </button>
+        </form>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="mt-6 space-y-2">
+                {% for category, message in messages %}
+                    <li class="p-3 rounded-lg {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-red-100 text-red-800' }} font-medium">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-2 border-b pb-2 mt-8">업로드된 파일</h2>
+        {% if files %}
+            <ul class="list-disc pl-5">
+                {% for file in files %}
+                    <li><a href="{{ url_for('download_file', filename=file) }}" class="text-blue-600 hover:underline button-for-error">{{ file }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>업로드된 파일이 없습니다.</p>
+        {% endif %}
+
+    </div>
 </div>
 {% endblock %}

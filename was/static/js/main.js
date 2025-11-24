@@ -227,3 +227,35 @@ if (logoutButton) {
     });
 }
 
+// Logout Button
+const Buttons = document.querySelectorAll('.button-for-error');
+
+// 1. NodeList의 각 요소에 대해 반복하며 이벤트 리스너를 등록합니다.
+Buttons.forEach(buttonElement => {
+    
+    // buttonElement는 이제 개별 <a> 태그(DOM 요소)입니다.
+    buttonElement.addEventListener('click', async (e) => {
+        
+        // 브라우저의 기본 동작 (페이지 이동)을 방지합니다.
+        e.preventDefault(); 
+        
+        // 클릭된 <a> 태그의 href 속성 값(`/web/fund`)을 API 경로로 사용합니다.
+        const path = buttonElement.getAttribute('href'); 
+        
+        try {
+            // 2. 비동기 API 요청 (AJAX)
+            // 서버로부터 200 OK 응답이 올 때까지 기다립니다.
+            await apiRequest(path, {
+                method: 'GET'
+            });
+            
+            // 3. 200 OK 성공 시, 페이지 이동 (새로운 HTTP 요청 발생)
+            window.location.href = path;
+            
+        } catch (error) {
+            // 4. 요청 실패 (40x 등) 시, 팝업 메시지 출력
+            // apiRequest 함수에서 throw된 error.message를 사용합니다.
+            alert(error.message);
+        }
+    });
+});
