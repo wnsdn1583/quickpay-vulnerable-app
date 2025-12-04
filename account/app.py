@@ -286,22 +286,6 @@ def withdraw():
 
 @app.route('/account/internal/debug', methods=['GET'])
 def debug_log_viewer():
-    """
-    [CTF 취약점 API - PDF Page 22]
-    개발자가 실수로 남긴 디버그용 API
-
-    SSRF (Server-Side Request Forgery):
-    정산서비스의 내부 API를 프록시처럼 사용 가능
-
-    공격 시나리오:
-    1. SSH로 계좌관리서비스 침투
-    2. 소스코드 분석 중 이 API 발견
-    3. GET /account/internal/debug?filename=flag.txt 호출
-    4. 정산서비스의 flag.txt 읽기 성공
-
-    Request: GET /account/internal/debug?filename=flag.txt
-    Response: flag 내용
-    """
     filename = request.args.get('filename', 'access.log')
 
     print(f"[{datetime.now()}] [디버그 API 호출] filename={filename}")

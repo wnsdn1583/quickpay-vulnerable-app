@@ -36,6 +36,8 @@ services:
       - ./was:/app
     networks:
       - internal_network # 내부 서비스 호출을 위해 internal_network에도 연결
+    env_file:             
+      - ./was/.env
 
   # ----------------------------------------------------
   # 3. BACKEND MICROSERVICES (INTERNAL NETWORK)
@@ -58,13 +60,14 @@ services:
       dockerfile: Dockerfile
     container_name: account
     restart: always
-    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    # command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    command: /start.sh
     volumes:
       - ./account:/app
     networks:
       - internal_network
-    env_file:             
-      - ./account/.env
+    # env_file:             
+    #   - ./account/.env
 
   payment:
     build:

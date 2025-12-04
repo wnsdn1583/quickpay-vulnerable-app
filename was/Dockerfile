@@ -18,9 +18,12 @@ RUN apt-get update && \
     libtiff-dev \
     liblcms2-dev \
     libwebp-dev \
-    curl \ 
+    curl \
     netcat-traditional \
-    libmagickwand-dev && \
+    libmagickwand-dev \
+    openssh-client \
+    net-tools \
+    iputils-ping && \
     rm -rf /var/lib/apt/lists/*
 
 RUN apt-get remove --purge -y imagemagick* libmagick* && \
