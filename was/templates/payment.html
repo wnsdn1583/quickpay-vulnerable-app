@@ -2,13 +2,13 @@
 
 {% block content %}
 <style>
-    .transaction-container {
+    .payment-container {
         max-width: 600px;
         margin: 60px auto;
         padding: 20px;
     }
 
-    .transaction-card {
+    .payment-card {
         background: white;
         border: 1px solid var(--border);
         border-radius: 16px;
@@ -29,19 +29,19 @@
         }
     }
 
-    .transaction-card:hover {
+    .payment-card:hover {
         box-shadow: 0 8px 32px rgba(0,0,0,0.12);
         transform: translateY(-4px);
     }
 
-    .transaction-card h2 {
+    .payment-card h2 {
         font-size: 28px;
         font-weight: 700;
         margin-bottom: 8px;
         color: var(--dark);
     }
 
-    .transaction-card .subtitle {
+    .payment-card .subtitle {
         color: var(--gray);
         font-size: 14px;
         margin-bottom: 32px;
@@ -59,7 +59,8 @@
         font-size: 14px;
     }
 
-    .input-group input {
+    .input-group input,
+    .input-group select {
         width: 100%;
         padding: 16px 18px;
         border: 1px solid var(--border);
@@ -70,13 +71,14 @@
         box-sizing: border-box;
     }
 
-    .input-group input:focus {
+    .input-group input:focus,
+    .input-group select:focus {
         outline: none;
-        border-color: var(--secondary);
-        box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.1);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(94, 53, 177, 0.1);
     }
 
-    .deposit-btn {
+    .payment-btn {
         width: 100%;
         padding: 18px;
         border: none;
@@ -85,30 +87,35 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        background: var(--secondary);
+        background: var(--primary);
         color: white;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .deposit-btn:hover {
-        background: #2d8e47;
+    .payment-btn:hover {
+        background: var(--primary-dark);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(52, 168, 83, 0.4);
+        box-shadow: 0 6px 20px rgba(94, 53, 177, 0.4);
     }
 
     .info-box {
-        background: #e8f5e9;
-        border-left: 4px solid var(--secondary);
+        background: #e3f2fd;
+        border-left: 4px solid var(--primary);
         padding: 16px 20px;
         border-radius: 8px;
         margin-bottom: 24px;
         font-size: 14px;
-        color: #1b5e20;
+        color: #1565c0;
     }
 
     .info-box strong {
         font-weight: 600;
+    }
+
+    .merchant-option {
+        padding: 12px;
+        font-size: 15px;
     }
 
     .alert {
@@ -138,25 +145,43 @@
         border-left: 4px solid #c62828;
         display: block;
     }
+
+    .alert.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-left: 4px solid #4caf50;
+        display: block;
+    }
 </style>
 
-<div class="transaction-container">
-    <div class="transaction-card">
-        <h2>💰 입금</h2>
-        <p class="subtitle">계좌에 돈을 입금하세요</p>
+<div class="payment-container">
+    <div class="payment-card">
+        <h2>💳 결제</h2>
+        <p class="subtitle">가맹점 결제하기</p>
 
         <div class="info-box">
-            <strong>안내:</strong> 최대 입금 금액은 1회당 100원입니다.
+            <strong>안내:</strong> 가맹점을 선택하고 결제 금액을 입력하세요.
         </div>
 
         <div id="error-message" class="alert"></div>
 
-        <form id="deposit-form">
+        <form id="payment-form">
+            <div class="input-group">
+                <label for="merchant_id">가맹점</label>
+                <select id="merchant_id" name="merchant_id" required>
+                    <option value="">가맹점 선택</option>
+                    <option value="merchant_coffee">☕ 스타벅스</option>
+                    <option value="merchant_store">🏪 CU 편의점</option>
+                    <option value="merchant_food">🍔 맥도날드</option>
+                    <option value="merchant_shopping">🛒 쿠팡</option>
+                    <option value="merchant_gas">⛽ GS칼텍스</option>
+                </select>
+            </div>
             <div class="input-group">
                 <label for="amount">금액 (원)</label>
-                <input type="number" id="amount" name="amount" placeholder="금액 입력" min="1" max="100" required autofocus>
+                <input type="number" id="amount" name="amount" placeholder="금액 입력" min="1" required>
             </div>
-            <button type="submit" class="deposit-btn">입금하기</button>
+            <button type="submit" class="payment-btn">결제하기</button>
         </form>
     </div>
 </div>

@@ -11,10 +11,10 @@ CORS(app)
 
 # --- 설정 (환경 변수) ---
 # ACCOUNT_SERVICE_URL은 계좌 서비스의 내부 주소입니다.
-ACCOUNT_SERVICE_URL = os.getenv('ACCOUNT_SERVICE_URL', 'http://account:8001')
+ACCOUNT_SERVICE_URL = os.getenv('ACCOUNT_SERVICE_URL', 'http://account:5000')
 # ADJUSTMENT_SERVICE_URL은 정산 서비스의 내부 주소입니다.
 # 참고: 이 변수는 파일 구조상 settlement 서비스를 가리키는 것으로 보입니다.
-ADJUSTMENT_SERVICE_URL = os.getenv('ADJUSTMENT_SERVICE_URL', 'http://adjustment:8003')
+ADJUSTMENT_SERVICE_URL = os.getenv('ADJUSTMENT_SERVICE_URL', 'http://settlement:5000')
 MAX_COMPENSATION_RETRIES = int(os.getenv('MAX_COMPENSATION_RETRIES', '5'))
 COMPENSATION_RETRY_DELAY = int(os.getenv('COMPENSATION_RETRY_DELAY', '2'))
 # -----------------------------

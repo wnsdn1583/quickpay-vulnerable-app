@@ -20,11 +20,14 @@
                 <li class="nav-item">
                     <a href="/web/fund" class="nav-links">사모펀드</a>
                 </li>
+                <li class="nav-item">
+                    <a href="/web/payment" class="nav-links">결제</a>
+                </li>
             </ul>
             <div class="nav-auth" id="auth-section">
                 {% if g.user_id %}
-                    <span id="user-info" class="nav-links">ID: {{ g.user_id }}</span>
-                    <span id="balance-info" class="nav-links">Balance: {{ g.user_balance }}</span>
+                    <span id="user-info" class="nav-links">{{ g.user_id }}</span>
+                    <span id="balance-info" class="nav-links">잔액: {{ g.user_balance }}원</span>
                     <button id="logout-button" class="btn btn-outline">로그아웃</button>
                 {% else %}
                     <a href="/web/login" class="btn btn-outline">로그인</a>
@@ -38,6 +41,10 @@
         {% block content %}{% endblock %}
     </main>
 
+    <script>
+        // Pass user_id from server to JavaScript
+        const CURRENT_USER_ID = "{{ g.user_id if g.user_id else '' }}";
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -1,15 +1,163 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="form-container">
-    <h2>출금</h2>
-    <form id="withdraw-form">
-        <div class="form-group">
-            <label for="amount">출금액</label>
-            <input type="number" id="amount" name="amount" required>
+<style>
+    .transaction-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 20px;
+    }
+
+    .transaction-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+        animation: fadeIn 0.4s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .transaction-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        transform: translateY(-4px);
+    }
+
+    .transaction-card h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--dark);
+    }
+
+    .transaction-card .subtitle {
+        color: var(--gray);
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+
+    .input-group {
+        margin-bottom: 28px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 14px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 16px 18px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s;
+        background: white;
+        box-sizing: border-box;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: #fbbc04;
+        box-shadow: 0 0 0 4px rgba(251, 188, 4, 0.1);
+    }
+
+    .withdraw-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #fbbc04;
+        color: var(--dark);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .withdraw-btn:hover {
+        background: #f9ab00;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(251, 188, 4, 0.4);
+    }
+
+    .info-box {
+        background: #fff8e1;
+        border-left: 4px solid #fbbc04;
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: #f57f17;
+    }
+
+    .info-box strong {
+        font-weight: 600;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+        animation: slideDown 0.3s;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert.error {
+        background: #ffebee;
+        color: #c62828;
+        border-left: 4px solid #c62828;
+        display: block;
+    }
+</style>
+
+<div class="transaction-container">
+    <div class="transaction-card">
+        <h2>💸 출금</h2>
+        <p class="subtitle">계좌에서 돈을 출금하세요</p>
+
+        <div class="info-box">
+            <strong>안내:</strong> 출금 전 잔액이 충분한지 확인하세요.
         </div>
-        <button type="submit" class="btn btn-primary">입력</button>
-    </form>
-    <div id="error-message" class="error-message"></div>
+
+        <div id="error-message" class="alert"></div>
+
+        <form id="withdraw-form">
+            <div class="input-group">
+                <label for="amount">금액 (원)</label>
+                <input type="number" id="amount" name="amount" placeholder="금액 입력" min="1" required autofocus>
+            </div>
+            <button type="submit" class="withdraw-btn">출금하기</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

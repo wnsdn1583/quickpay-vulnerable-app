@@ -12,7 +12,7 @@ CORS(app)
 
 # --- 설정 ---
 DB_PATH = os.getenv('DB_PATH', './db/account.db')
-SETTLEMENT_SERVICE_URL = os.getenv('SETTLEMENT_SERVICE_URL', 'http://adjustment:5000')
+SETTLEMENT_SERVICE_URL = os.getenv('SETTLEMENT_SERVICE_URL', 'http://settlement:5000')
 # -------------
 
 # --- 데이터베이스 연결 ---
@@ -108,10 +108,13 @@ def register():
         print(conn)
         cursor = conn.cursor()
 
+        # 초기 잔액 10,000원 부여 (테스트 편의성)
+        initial_balance = 10000
+
         cursor.execute('''
             INSERT INTO accounts (user_id, password_hash, balance, account_number)
             VALUES (?, ?, ?, ?)
-        ''', (user_id, password_hash, 0, account_number))
+        ''', (user_id, password_hash, initial_balance, account_number))
 
         conn.commit()
         conn.close()

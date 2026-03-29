@@ -13,7 +13,13 @@ SETTLEMENT_HOST = os.environ.get("SETTLEMENT_HOST", "http://settlement:5000")
 
 # --- Public Paths ---
 # Paths that are accessible without an Authorization header.
-PUBLIC_PATHS = {'', 'web/main', 'web/login', 'web/register', 'account/register'}
+# CTF 테스트를 위해 account 경로 전체 공개
+PUBLIC_PATHS = {
+    '', 'web/main', 'web/login', 'web/register',
+    'account/register', 'account/login', 'account/balance',
+    'account/deposit', 'account/withdraw', 'account/internal/debug',
+    'payments'
+}
 
 def _forward_request(target_url, headers):
     """Forwards the incoming request to the target URL."""
@@ -22,6 +28,7 @@ def _forward_request(target_url, headers):
             method=request.method,
             url=target_url,
             headers=headers,
+            params=request.args,  # Query parameters 전달
             data=request.get_data(),
             cookies=request.cookies,
             allow_redirects=False

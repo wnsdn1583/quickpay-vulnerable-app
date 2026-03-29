@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, g
+from flask import Flask, render_template, request, g, redirect, url_for
 import requests 
 
 app = Flask(__name__, static_folder='static')
@@ -52,6 +52,18 @@ def fund():
     if not g.user_id:
         return redirect(url_for('login'))
     return render_template('fund.html')
+
+@app.route('/web/payment')
+def payment():
+    if not g.user_id:
+        return redirect(url_for('login'))
+    return render_template('payment.html')
+
+@app.route('/web/settlement')
+def settlement():
+    if not g.user_id:
+        return redirect(url_for('login'))
+    return render_template('settlement.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8888)

@@ -1,5 +1,5 @@
-// const ACCOUNT_API_BASE = 'http://account';
-const ACCOUNT_API_BASE = 'http://localhost:8080';
+// Dynamically use current host (works for both local and deployed environments)
+const ACCOUNT_API_BASE = window.location.origin;
 
 // Function to handle API requests
 async function apiRequest(path, options = {}, followRedirects = true) {
@@ -120,7 +120,7 @@ if (depositForm) {
             await apiRequest(`${ACCOUNT_API_BASE}/account/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount }),
+                body: JSON.stringify({ user_id: CURRENT_USER_ID, amount: amount }),
             });
             alert('입금 성공');
             window.location.href = '/web/main';
@@ -152,12 +152,56 @@ if (withdrawForm) {
             await apiRequest(`${ACCOUNT_API_BASE}/account/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount }),
+                body: JSON.stringify({ user_id: CURRENT_USER_ID, amount: amount }),
             });
             alert('출금 성공');
             window.location.href = '/web/main';
         } catch (error) {
             errorMessageDiv.textContent = error.message;
+        }
+    });
+}
+
+// Payment Form
+const paymentForm = document.getElementById('payment-form');
+if (paymentForm) {
+    paymentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(paymentForm);
+        const merchantId = formData.get('merchant_id');
+        const amount = parseFloat(formData.get('amount'));
+        const errorMessageDiv = document.getElementById('error-message');
+
+        if (!merchantId) {
+            errorMessageDiv.textContent = '가맹점을 선택해주세요';
+            errorMessageDiv.className = 'alert error';
+            return;
+        }
+
+        if (isNaN(amount) || amount <= 0) {
+            errorMessageDiv.textContent = '올바른 금액을 입력해주세요';
+            errorMessageDiv.className = 'alert error';
+            return;
+        }
+
+        try {
+            await apiRequest(`${ACCOUNT_API_BASE}/payments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: CURRENT_USER_ID,
+                    merchant_id: merchantId,
+                    amount: amount
+                }),
+            });
+            errorMessageDiv.textContent = `${amount.toLocaleString()}원 결제가 완료되었습니다!`;
+            errorMessageDiv.className = 'alert success';
+            setTimeout(() => {
+                window.location.href = '/web/main';
+            }, 2000);
+        } catch (error) {
+            errorMessageDiv.textContent = error.message;
+            errorMessageDiv.className = 'alert error';
         }
     });
 }

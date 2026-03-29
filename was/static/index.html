@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickPay - Digital Banking Solution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --secondary: #34a853;
+            --dark: #202124;
+            --gray: #5f6368;
+            --light: #f8f9fa;
+            --border: #dadce0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .btn-login {
+            padding: 10px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .btn-logout {
+            padding: 8px 20px;
+            background: transparent;
+            color: #ea4335;
+            border: 1px solid #ea4335;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #ea4335;
+            color: white;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 40px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 40px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-hero {
+            padding: 16px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 40px;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 60px;
+            color: var(--dark);
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 40px 30px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            background: var(--light);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        /* Banking Section (Hidden by default) */
+        .banking-section {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e8eaed;
+        }
+
+        .tab {
+            padding: 14px 28px;
+            background: none;
+            border: none;
+            color: #5f6368;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance-amount {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .account-info {
+            font-size: 15px;
+            opacity: 0.85;
+            font-family: 'Courier New', monospace;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .service-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+
+        .service-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-4px);
+        }
+
+        .service-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--dark);
+        }
+
+        .input-field {
+            margin-bottom: 20px;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .input-field input,
+        .input-field select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .input-field input:focus,
+        .input-field select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2d8e47;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #fbbc04;
+            color: var(--dark);
+        }
+
+        .btn-warning:hover {
+            background: #f9ab00;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary-full {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary-full:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .info-text {
+            color: #5f6368;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .log-viewer {
+            margin-top: 24px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #ea4335;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Login Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 50px;
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--gray);
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--dark);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .footer {
+            background: #f8f9fa;
+            padding: 60px 40px 40px;
+            text-align: center;
+            color: var(--gray);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-link {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            font-size: 13px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">QuickPay</div>
+            <nav class="nav-menu" id="publicNav">
+                <a href="#" class="nav-link">Services</a>
+                <a href="#" class="nav-link">Security</a>
+                <a href="#" class="nav-link">Support</a>
+                <button class="btn-login" onclick="showLoginModal()">Login</button>
+            </nav>
+            <div class="user-info" id="userNav" style="display: none;">
+                <span class="user-name" id="userName">Guest</span>
+                <button class="btn-logout" onclick="logout()">Sign Out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Alert -->
+    <div id="alertBox" class="alert" style="margin: 20px auto; max-width: 1400px;"></div>
+
+    <!-- Landing Page -->
+    <div id="landingPage">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>The Future of Digital Banking</h1>
+                <p>Experience seamless, secure, and intelligent banking designed for the modern world.</p>
+                <div class="hero-buttons">
+                    <button class="btn-hero btn-primary" onclick="showLoginModal()">Get Started</button>
+                    <button class="btn-hero btn-secondary" onclick="showRegisterModal()">Open Account</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <h2 class="section-title">Why Choose QuickPay?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Bank-Level Security</h3>
+                    <p>Advanced encryption and multi-factor authentication keep your money safe 24/7.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Instant Transfers</h3>
+                    <p>Send and receive money instantly with zero fees between QuickPay accounts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile First</h3>
+                    <p>Manage your finances anywhere, anytime with our award-winning mobile app.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link">About Us</a>
+                <a href="#" class="footer-link">Privacy Policy</a>
+                <a href="#" class="footer-link">Terms of Service</a>
+                <a href="#" class="footer-link">Contact</a>
+            </div>
+            <p class="copyright">&copy; 2025 QuickPay Digital Banking. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Banking Dashboard (Hidden initially) -->
+    <div class="banking-section" id="bankingSection">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+            <button class="tab" onclick="switchTab('transactions')">Transactions</button>
+            <button class="tab" onclick="switchTab('payments')">Payments</button>
+            <button class="tab" onclick="switchTab('support')">Support</button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboardTab" class="tab-content active">
+            <div class="balance-card">
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-amount" id="balanceAmount">₩ ---</div>
+                <div class="account-info">Account: 1002-****-****</div>
+            </div>
+            <button class="btn btn-primary-full" onclick="refreshBalance()">Refresh Balance</button>
+        </div>
+
+        <!-- Transactions -->
+        <div id="transactionsTab" class="tab-content">
+            <div class="grid-2">
+                <div class="service-card">
+                    <h3 class="service-title">Deposit</h3>
+                    <div class="input-field">
+                        <label>Amount</label>
+                        <input type="number" id="depositAmount" placeholder="Enter amount">
+                    </div>
+                    <button class="btn btn-success" onclick="deposit()">Deposit</button>
+                </div>
+                <div class="service-card">
+                    <h3 class="service-title">Withdraw</h3>
+                    <div class="input-field">
+                        <label>Amount</label>
+                        <input type="number" id="withdrawAmount" placeholder="Enter amount" min="1">
+                    </div>
+                    <button class="btn btn-warning" onclick="withdraw()">Withdraw</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div id="paymentsTab" class="tab-content">
+            <div class="service-card">
+                <h3 class="service-title">Quick Payment</h3>
+                <div class="input-field">
+                    <label>Merchant</label>
+                    <select id="merchantId">
+                        <option value="merchant_coffee">Starbucks</option>
+                        <option value="merchant_store">CU Store</option>
+                        <option value="merchant_food">McDonald's</option>
+                        <option value="merchant_shopping">Coupang</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label>Amount</label>
+                    <input type="number" id="paymentAmount" placeholder="Enter amount" min="1">
+                </div>
+                <button class="btn btn-primary-full" onclick="makePayment()">Pay Now</button>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div id="supportTab" class="tab-content">
+            <div class="service-card">
+                <h3 class="service-title">Customer Support</h3>
+                <p class="info-text">Thank you for using QuickPay Digital Banking.</p>
+                <p class="info-text">Hotline: 1588-XXXX (Mon-Fri, 09:00-18:00)</p>
+            </div>
+            <div class="service-card">
+                <h3 class="service-title">Activity Log Viewer</h3>
+                <p class="info-text">View your account activity logs for security monitoring.</p>
+                <div class="input-field">
+                    <label>Log File</label>
+                    <input type="text" id="logFilename" placeholder="e.g., access.log" value="access.log">
+                </div>
+                <button class="btn btn-primary-full" onclick="viewLog()">View Logs</button>
+                <div id="logResult" class="log-viewer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            <h2 class="modal-title">Sign In</h2>
+            <div class="input-field">
+                <label>Username</label>
+                <input type="text" id="loginUserId" placeholder="Enter your username">
+            </div>
+            <div class="input-field">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
+            </div>
+            <button class="btn btn-primary-full" onclick="login()">Login</button>
+            <div class="register-link">
+                Don't have an account? <a href="#" onclick="showRegisterModal()">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+            <h2 class="modal-title">Create Account</h2>
+            <div class="input-field">
+                <label>Username</label>
+                <input type="text" id="regUserId" placeholder="Choose a username">
+            </div>
+            <div class="input-field">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="Choose a password">
+            </div>
+            <button class="btn btn-primary-full" onclick="register()">Sign Up</button>
+            <div class="register-link">
+                Already have an account? <a href="#" onclick="showLoginModal()">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let currentUser = null;
+
+        function showLoginModal() {
+            closeModal('registerModal');
+            document.getElementById('loginModal').classList.add('show');
+        }
+
+        function showRegisterModal() {
+            closeModal('loginModal');
+            document.getElementById('registerModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert ${type}`;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            setTimeout(() => alertBox.style.display = 'none', 5000);
+        }
+
+        async function register() {
+            const userId = document.getElementById('regUserId').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!userId || !password) {
+                showAlert('Please enter username and password.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/account/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, password: password })
+                });
+
+                if (response.ok) {
+                    showAlert('Account created! Please login.', 'success');
+                    document.getElementById('regUserId').value = '';
+                    document.getElementById('regPassword').value = '';
+                    closeModal('registerModal');
+                    setTimeout(showLoginModal, 500);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.message || 'Registration failed.', 'error');
+                }
+            } catch (error) {
+                showAlert('Server error. Please try again.', 'error');
+            }
+        }
+
+        async function login() {
+            const userId = document.getElementById('loginUserId').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!userId || !password) {
+                showAlert('Please enter username and password.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/account/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, password: password })
+                });
+
+                if (response.ok) {
+                    currentUser = userId;
+                    document.getElementById('userName').textContent = userId;
+                    document.getElementById('publicNav').style.display = 'none';
+                    document.getElementById('userNav').style.display = 'flex';
+                    document.getElementById('landingPage').style.display = 'none';
+                    document.getElementById('bankingSection').style.display = 'block';
+                    closeModal('loginModal');
+                    showAlert('Login successful.', 'success');
+                    refreshBalance();
+                } else {
+                    showAlert('Invalid credentials.', 'error');
+                }
+            } catch (error) {
+                showAlert('Server error. Please try again.', 'error');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('userName').textContent = 'Guest';
+            document.getElementById('publicNav').style.display = 'flex';
+            document.getElementById('userNav').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'block';
+            document.getElementById('bankingSection').style.display = 'none';
+            showAlert('Logged out.', 'info');
+        }
+
+        async function refreshBalance() {
+            if (!currentUser) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/account/balance?user_id=${currentUser}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('balanceAmount').textContent = '₩ ' + data.balance.toLocaleString();
+                    showAlert('Balance updated.', 'success');
+                }
+            } catch (error) {
+                showAlert('Failed to fetch balance.', 'error');
+            }
+        }
+
+        async function deposit() {
+            if (!currentUser) return;
+
+            const amount = parseInt(document.getElementById('depositAmount').value);
+
+            if (!amount) {
+                showAlert('Please enter amount.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/account/deposit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser, amount: amount })
+                });
+
+                if (response.ok) {
+                    showAlert(`Deposited ₩${amount.toLocaleString()}.`, 'success');
+                    document.getElementById('depositAmount').value = '';
+                    refreshBalance();
+                }
+            } catch (error) {
+                showAlert('Deposit failed.', 'error');
+            }
+        }
+
+        async function withdraw() {
+            if (!currentUser) return;
+
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+
+            if (!amount || amount <= 0) {
+                showAlert('Please enter valid amount.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/account/withdraw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser, amount: amount })
+                });
+
+                if (response.ok) {
+                    showAlert(`Withdrawn ₩${amount.toLocaleString()}.`, 'success');
+                    document.getElementById('withdrawAmount').value = '';
+                    refreshBalance();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.message || 'Withdrawal failed.', 'error');
+                }
+            } catch (error) {
+                showAlert('Withdrawal failed.', 'error');
+            }
+        }
+
+        async function makePayment() {
+            if (!currentUser) return;
+
+            const merchantId = document.getElementById('merchantId').value;
+            const amount = parseInt(document.getElementById('paymentAmount').value);
+
+            if (!amount || amount <= 0) {
+                showAlert('Please enter valid amount.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/payments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser,
+                        merchant_id: merchantId,
+                        amount: amount
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert(`Payment of ₩${amount.toLocaleString()} completed.`, 'success');
+                    document.getElementById('paymentAmount').value = '';
+                    refreshBalance();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.message || 'Payment failed.', 'error');
+                }
+            } catch (error) {
+                showAlert('Payment failed.', 'error');
+            }
+        }
+
+        async function viewLog() {
+            const filename = document.getElementById('logFilename').value;
+
+            if (!filename) {
+                showAlert('Please enter log filename.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/account/internal/debug?filename=${filename}`);
+                const data = await response.text();
+
+                document.getElementById('logResult').textContent = data;
+                document.getElementById('logResult').style.display = 'block';
+                showAlert('Log retrieved.', 'success');
+            } catch (error) {
+                showAlert('Failed to retrieve log.', 'error');
+            }
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
